@@ -27,11 +27,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application code (excluding node_modules, etc. via .dockerignore)
 COPY --chown=www-data:www-data . .
 
-# Generate app key
-RUN php artisan key:generate
-
 # Install PHP dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+# Generate app key
+RUN php artisan key:generate
 
 # Set correct permissions for storage and bootstrap cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
