@@ -34,8 +34,8 @@ RUN php artisan key:generate
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Set correct permissions for storage and bootstrap cache
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Copy Nginx and Supervisor configurations
 COPY docker/nginx.conf /etc/nginx/nginx.conf
