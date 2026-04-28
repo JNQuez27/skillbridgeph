@@ -27,8 +27,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application code (excluding node_modules, etc. via .dockerignore)
 COPY --chown=www-data:www-data . .
 
-# Copy built assets from the builder stage
-COPY --from=builder /app/public/build ./public/build
+# Generate app key
+RUN php artisan key:generate
 
 # Install PHP dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
