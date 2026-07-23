@@ -1,44 +1,48 @@
 <?php
 
+use App\Http\Controllers\ApplicantProfileController;
+use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\CredentialController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployerProfileController;
+use App\Http\Controllers\JobPostController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('SkillBridge/SkillBridgePage');
+// Public dashboard
+Route::get('/', fn () => Inertia::render('SkillBridge/SkillBridgePage'))->name('home');
+
+// Guest auth screens + actions
+Route::middleware('guest')->group(function () {
+    Route::get('/login', fn () => Inertia::render('JobSeeker/Login'))->name('login');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('/signup', fn () => Inertia::render('JobSeeker/Signup'))->name('signup');
+    Route::post('/register', [RegisteredUserController::class, 'store']);
+
+    Route::get('/forgot-password', fn () => Inertia::render('JobSeeker/ForgotPassword'))->name('password.request');
 });
 
-Route::get('/login', function () {
-    return Inertia::render('JobSeeker/Login');
-});
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
 
-Route::get('/signup', function () {
-    return Inertia::render('JobSeeker/Signup');
-});
+// Authenticated app
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/onboarding', fn () => Inertia::render('JobSeeker/Onboarding'))->name('onboarding');
 
-Route::get('/forgot-password', function () {
-    return Inertia::render('JobSeeker/ForgotPassword');
-});
+    // Applicant actions
+    Route::put('/applicant-profile', [ApplicantProfileController::class, 'update']);
+    Route::post('/credentials', [CredentialController::class, 'store']);
+    Route::delete('/credentials/{credential}', [CredentialController::class, 'destroy']);
+    Route::post('/applications/{jobPost}', [ApplicationController::class, 'store']);
 
-Route::get('/onboarding', function () {
-    return Inertia::render('JobSeeker/Onboarding');
-});
-
-Route::get('/dashboard', function (Request $request) {
-    $role = $request->get('role', 'jobseeker');
-    $normalizedRole = $role === 'employer' ? 'employer' : 'jobseeker';
-    $initialView = $normalizedRole === 'employer' ? 'employer-dashboard' : 'jobseeker-dashboard';
-
-    return Inertia::render('SkillBridge/SkillBridgePage', [
-        'initialView' => $initialView,
-        'initialRole' => $normalizedRole,
-    ]);
-});
-
-Route::get('/profile', function () {
-    return Inertia::render('SkillBridge/SkillBridgePage', [
-        'initialView' => 'user-profile',
-        'initialRole' => 'jobseeker',
-        'requiresAuth' => true,
-    ]);
+    // Employer actions
+    Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
+    Route::post('/job-posts', [JobPostController::class, 'store']);
+    Route::post('/assessments', [AssessmentController::class, 'store']);
 });

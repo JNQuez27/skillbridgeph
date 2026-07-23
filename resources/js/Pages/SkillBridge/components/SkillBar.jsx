@@ -1,7 +1,9 @@
 import { IconCheck } from "./Icons";
 
 export default function SkillBar({ skill }) {
-  const isVerified = skill.verification?.status === "verified";
+  const isVerified = skill.verified === true
+    || skill.verificationStatus === "verified"
+    || skill.verification?.status === "verified";
   return (
     <div style={{ marginBottom:14 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5 }}>

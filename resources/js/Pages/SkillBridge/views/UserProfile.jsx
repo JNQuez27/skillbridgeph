@@ -1,8 +1,6 @@
-import { useMemo } from "react";
-import { mockJobs, mockSkills } from "../data/mockData";
+import { useState } from "react";
+import { router, useForm } from "@inertiajs/react";
 import SkillBar from "../components/SkillBar";
-import { calculateMatchScore, getJobLocation } from "../utils/matching";
-import { getSession } from "../../JobSeeker/hooks/useSession";
 import {
   IconCheck,
   IconStar,
@@ -15,8 +13,7 @@ import {
   IconClipboardCheck,
 } from "../components/Icons";
 
-// Local blue + green brand palette (matches the public dashboard). theme.js and
-// the shared header are left untouched.
+// Local blue + green brand palette.
 const COLORS = {
   parchment: "#F0F9FF",
   parchmentDark: "#E0F2FE",
@@ -29,7 +26,6 @@ const COLORS = {
   textMid: "#075985",
   textLight: "#64748B",
   success: "#16A34A",
-  gold: "#16A34A",
   goldLight: "#4ADE80",
   info: "#0369A1",
 };
@@ -39,91 +35,50 @@ const FONT_BODY = "'Source Sans 3', sans-serif";
 
 const sectionMeta = {
   skills: { label: "Skills & Badges", sub: "Your verified proof of skill.", Icon: IconZap },
-  portfolio: { label: "Portfolio", sub: "Selected work and case studies.", Icon: IconBriefcase },
-  matches: { label: "Job Matches", sub: "Roles aligned to your verified skills.", Icon: IconTarget },
+  portfolio: { label: "Credentials & Portfolio", sub: "Upload your resume, certificates, and work.", Icon: IconBriefcase },
+  matches: { label: "Job Matches", sub: "Jobs matched to you — pick the ones that fit.", Icon: IconTarget },
   assessments: { label: "Assessments", sub: "Company assessments and results.", Icon: IconClipboardCheck },
 };
 
-export default function ProfileView({ activeTab = "skills" }) {
+const badgeActionLabel = (method) => {
+  if (method === "portfolio") return "Submit Portfolio";
+  if (method === "scenario") return "Start Scenario";
+  return "Take Assessment";
+};
+
+const formatBytes = (bytes) => {
+  if (!bytes) return "";
+  const kb = bytes / 1024;
+  return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.round(kb)} KB`;
+};
+
+export default function ProfileView({ account, activeTab = "skills" }) {
   const tab = sectionMeta[activeTab] ? activeTab : "skills";
-  const session = useMemo(() => getSession(), []);
-  const applicantProfile = useMemo(() => {
-    if (session?.applicantProfile) return session.applicantProfile;
-    const verifiedSkills = mockSkills
-      .filter((skill) => skill.verification?.status === "verified")
-      .map((skill) => skill.name);
-    return {
-      name: session?.name || "Maria Santos",
-      location: session?.location || "Davao City, Philippines",
-      skills: mockSkills.map((skill) => skill.name),
-      verifiedSkills,
-      experienceLevel: "Entry",
-    };
-  }, [session]);
-  const availableJobs = useMemo(() => {
-    const savedJobs = session?.employerJobs;
-    if (Array.isArray(savedJobs) && savedJobs.length > 0) {
-      const mergedJobs = [...savedJobs];
-      mockJobs.forEach((job) => {
-        const exists = mergedJobs.some((saved) => (
-          saved.title === job.title && (saved.company || "NovaByte Solutions") === job.company
-        ));
-        if (!exists) mergedJobs.push(job);
-      });
-      return mergedJobs;
-    }
-    return mockJobs;
-  }, [session]);
-  const matchingProfile = useMemo(() => {
-    const fallbackSkills = mockSkills.map((skill) => skill.name);
-    const fallbackVerified = mockSkills
-      .filter((skill) => skill.verification?.status === "verified")
-      .map((skill) => skill.name);
-    return {
-      ...applicantProfile,
-      location: applicantProfile.location || "Davao City, Philippines",
-      skills: Array.isArray(applicantProfile.skills) && applicantProfile.skills.length > 0
-        ? applicantProfile.skills
-        : fallbackSkills,
-      verifiedSkills: Array.isArray(applicantProfile.verifiedSkills) && applicantProfile.verifiedSkills.length > 0
-        ? applicantProfile.verifiedSkills
-        : fallbackVerified,
-      experienceLevel: applicantProfile.experienceLevel || "Entry",
-    };
-  }, [applicantProfile]);
-
-  const matchedJobs = useMemo(() => (
-    availableJobs
-      .map((job) => ({ job, match: calculateMatchScore(job, matchingProfile) }))
-      .filter((entry) => entry.match.score >= 60)
-      .sort((a, b) => b.match.score - a.match.score)
-  ), [availableJobs, matchingProfile]);
-  const isBadgeVerified = (skill) => skill.verification?.status === "verified";
-  const getBadgeActionLabel = (skill) => {
-    const method = skill.verification?.method;
-    if (method === "portfolio") return "Submit Portfolio";
-    if (method === "scenario") return "Start Scenario";
-    return "Take Assessment";
-  };
-
-  const initials = (applicantProfile.name || "User")
-    .split(" ").filter(Boolean).map((word) => word[0]).slice(0, 2).join("").toUpperCase() || "U";
-
-  const companyAssessments = [
-    {
-      company: "NovaByte Solutions",
-      location: "Davao City",
-      assessments: [
-        { id: "novabyte-1", title: "WordPress + Webflow Practical", score: 98, status: "Completed", date: "Apr 16, 2026", questionCount: 8, durationMinutes: 16, passingScore: 70, summary: "Site build, CMS structuring, responsive QA, and publish workflow." },
-        { id: "novabyte-2", title: "SEO Foundations", score: 92, status: "Completed", date: "Apr 14, 2026", questionCount: 10, durationMinutes: 14, passingScore: 75, summary: "Metadata, on-page optimization, and Core Web Vitals basics." },
-        { id: "novabyte-3", title: "UI/UX Case Study", score: null, status: "Invited", date: null, questionCount: 6, durationMinutes: 14, passingScore: 70, summary: "User flow mapping and landing page critique for SME clients." },
-      ],
-    },
-  ];
+  const profile = account?.profile || {};
+  const skills = account?.skills || [];
+  const credentials = account?.credentials || [];
+  const matches = account?.matches || [];
+  const assessments = account?.assessments || [];
 
   const SectionIcon = sectionMeta[tab].Icon;
   const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
   const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
+  const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
+
+  const verifiedSkills = skills.filter((s) => s.verificationStatus === "verified");
+  const pendingSkills = skills.filter((s) => s.verificationStatus !== "verified");
+
+  const upload = useForm({ type: "resume", title: "", file: null });
+  const submitCredential = (event) => {
+    event.preventDefault();
+    upload.post("/credentials", {
+      forceFormData: true,
+      preserveScroll: true,
+      onSuccess: () => upload.reset("title", "file"),
+    });
+  };
+  const deleteCredential = (id) => router.delete(`/credentials/${id}`, { preserveScroll: true });
+  const pickJob = (jobId, status) => router.post(`/applications/${jobId}`, { status }, { preserveScroll: true });
 
   return (
     <div style={{ padding: "28px 32px", fontFamily: FONT_BODY, background: COLORS.parchment, minHeight: "calc(100vh - 64px)" }}>
@@ -140,28 +95,32 @@ export default function ProfileView({ activeTab = "skills" }) {
           display: "flex", alignItems: "center", justifyContent: "center",
           fontFamily: FONT_DISPLAY, fontSize: 28, fontWeight: 700, color: "#fff", flexShrink: 0,
           border: "3px solid rgba(255,255,255,0.25)",
-        }}>{initials}</div>
+        }}>{profile.initials || "U"}</div>
         <div style={{ flex: 1, minWidth: 220 }}>
           <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, color: "#fff", marginBottom: 4 }}>
-            {applicantProfile.name}
+            {profile.name}
           </h2>
-          <p style={{ color: "rgba(224,242,254,0.85)", fontSize: 13, marginBottom: 12 }}>
-            WordPress &amp; Webflow Developer
-          </p>
+          <p style={{ color: "rgba(224,242,254,0.85)", fontSize: 13, marginBottom: 12 }}>{profile.headline}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(34,197,94,0.18)", color: COLORS.goldLight, padding: "4px 11px", borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
-              <IconCheck size={12} /> Verified
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.12)", color: "#fff", padding: "4px 11px", borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
-              <IconStar size={12} /> 100% Avg Match
-            </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(224,242,254,0.8)", fontSize: 12 }}>
-              <IconMapPin size={13} /> {applicantProfile.location}
-            </span>
+            {profile.stats?.badges > 0 && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(34,197,94,0.18)", color: COLORS.goldLight, padding: "4px 11px", borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+                <IconCheck size={12} /> {profile.stats.badges} verified
+              </span>
+            )}
+            {matches.length > 0 && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.12)", color: "#fff", padding: "4px 11px", borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+                <IconStar size={12} /> {matches[0].score}% top match
+              </span>
+            )}
+            {profile.location && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(224,242,254,0.8)", fontSize: 12 }}>
+                <IconMapPin size={13} /> {profile.location}
+              </span>
+            )}
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-          {[["6", "Badges"], ["4", "Applied"], ["18", "Profile Views"]].map(([v, l]) => (
+          {[[profile.stats?.badges ?? 0, "Badges"], [profile.stats?.applied ?? 0, "Applied"], [profile.stats?.matches ?? 0, "Matches"]].map(([v, l]) => (
             <div key={l} style={{ textAlign: "center", background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 16px", minWidth: 76 }}>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, color: COLORS.goldLight, fontWeight: 700 }}>{v}</div>
               <div style={{ fontSize: 11, color: "rgba(224,242,254,0.7)" }}>{l}</div>
@@ -170,7 +129,7 @@ export default function ProfileView({ activeTab = "skills" }) {
         </div>
       </div>
 
-      {/* Section heading (sections are switched from the profile menu) */}
+      {/* Section heading */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
         <span style={{
           width: 42, height: 42, borderRadius: 12, flexShrink: 0,
@@ -191,13 +150,14 @@ export default function ProfileView({ activeTab = "skills" }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
           <div style={cardStyle}>
             <h4 style={headingStyle}>Verified Skill Badges (Proof of Skill)</h4>
-            {mockSkills.map((s) => <SkillBar key={s.name} skill={s} />)}
+            {skills.length === 0 && <p style={{ fontSize: 13, color: COLORS.textLight }}>No skills yet.</p>}
+            {skills.map((s) => <SkillBar key={s.name} skill={s} />)}
           </div>
           <div>
             <div style={{ ...cardStyle, marginBottom: 16 }}>
               <h4 style={headingStyle}>Earned Badges</h4>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                {mockSkills.filter(isBadgeVerified).map((s) => (
+                {verifiedSkills.filter((s) => s.badge).map((s) => (
                   <div key={s.name} style={{
                     background: `linear-gradient(135deg, ${COLORS.brownMid}, ${COLORS.info})`,
                     borderRadius: 14, padding: "16px 16px", textAlign: "center", minWidth: 104,
@@ -210,6 +170,9 @@ export default function ProfileView({ activeTab = "skills" }) {
                     <div style={{ fontSize: 10, color: "rgba(224,242,254,0.75)", marginTop: 2 }}>{s.name.split("/")[0].trim()}</div>
                   </div>
                 ))}
+                {verifiedSkills.filter((s) => s.badge).length === 0 && (
+                  <p style={{ fontSize: 12, color: COLORS.textLight }}>No earned badges yet.</p>
+                )}
               </div>
             </div>
             <div style={cardStyle}>
@@ -217,10 +180,11 @@ export default function ProfileView({ activeTab = "skills" }) {
               <p style={{ fontSize: 12, color: COLORS.textLight, marginTop: 0, marginBottom: 12 }}>
                 Complete the assessment, scenario, or portfolio check to convert these into verified badges.
               </p>
-              {mockSkills.filter((skill) => !isBadgeVerified(skill)).map((s) => (
+              {pendingSkills.length === 0 && <p style={{ fontSize: 12, color: COLORS.textLight }}>All your skills are verified.</p>}
+              {pendingSkills.map((s) => (
                 <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "10px 14px", background: COLORS.parchment, borderRadius: 10 }}>
                   <span style={{ fontSize: 13, color: COLORS.textDark }}>{s.name}</span>
-                  <button style={{ padding: "6px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY }}>{getBadgeActionLabel(s)}</button>
+                  <button style={{ ...primaryBtn, padding: "6px 14px", fontSize: 11 }}>{badgeActionLabel(s.verificationMethod)}</button>
                 </div>
               ))}
             </div>
@@ -229,77 +193,106 @@ export default function ProfileView({ activeTab = "skills" }) {
       )}
 
       {tab === "portfolio" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
-          {["WordPress Ecommerce Refresh", "Webflow Landing System", "SEO Audit Template", "Restaurant Booking Site"].map((p) => (
-            <div key={p} className="card-hover" style={{
-              background: COLORS.cream, borderRadius: 14, border: `1px solid ${COLORS.parchmentDeep}`,
-              overflow: "hidden", cursor: "pointer",
-            }}>
-              <div style={{ height: 130, background: `linear-gradient(135deg, ${COLORS.brownMid}, ${COLORS.info})`, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.9)" }}>
-                <IconBriefcase size={34} />
-              </div>
-              <div style={{ padding: "14px 16px" }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.brownDeep }}>{p}</div>
-                <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 4 }}>WordPress · Webflow · 2026</div>
-              </div>
+        <div style={{ display: "grid", gap: 20 }}>
+          <form onSubmit={submitCredential} style={{ ...cardStyle, display: "grid", gap: 14 }}>
+            <h4 style={{ ...headingStyle, marginBottom: 0 }}>Upload a credential</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Type</span>
+                <select
+                  value={upload.data.type}
+                  onChange={(e) => upload.setData("type", e.target.value)}
+                  style={{ padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY }}
+                >
+                  <option value="resume">Resume / CV</option>
+                  <option value="certificate">Certificate</option>
+                  <option value="portfolio">Portfolio</option>
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Title (optional)</span>
+                <input
+                  type="text"
+                  value={upload.data.title}
+                  placeholder="e.g. 2026 Resume"
+                  onChange={(e) => upload.setData("title", e.target.value)}
+                  style={{ padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY }}
+                />
+              </label>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>File (PDF/DOC/image, max 5MB)</span>
+                <input
+                  type="file"
+                  onChange={(e) => upload.setData("file", e.target.files[0])}
+                  style={{ padding: "8px 10px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 12, color: COLORS.textDark, fontFamily: FONT_BODY }}
+                />
+              </label>
             </div>
-          ))}
-          <div className="card-hover" style={{
-            background: "transparent", borderRadius: 14, border: `2px dashed ${COLORS.parchmentDeep}`,
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            padding: "40px 20px", cursor: "pointer", minHeight: 200, color: COLORS.textLight,
-          }}>
-            <IconPlus size={30} />
-            <div style={{ fontSize: 13, marginTop: 8 }}>Add Portfolio Item</div>
+            {upload.errors.file && <span style={{ fontSize: 12, color: "#DC2626" }}>{upload.errors.file}</span>}
+            <div>
+              <button type="submit" disabled={upload.processing || !upload.data.file} style={{ ...primaryBtn, opacity: upload.processing || !upload.data.file ? 0.6 : 1, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <IconPlus size={14} /> {upload.processing ? "Uploading…" : "Upload credential"}
+              </button>
+            </div>
+          </form>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+            {credentials.length === 0 && (
+              <p style={{ fontSize: 13, color: COLORS.textLight }}>No credentials uploaded yet.</p>
+            )}
+            {credentials.map((c) => (
+              <div key={c.id} style={{ ...cardStyle, display: "grid", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: COLORS.brownLight }}>
+                  <IconBriefcase size={18} />
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.textLight }}>{c.type}</span>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.brownDeep, wordBreak: "break-word" }}>{c.title}</div>
+                <div style={{ fontSize: 12, color: COLORS.textLight }}>{c.originalName} · {formatBytes(c.size)}</div>
+                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                  <a href={c.url} target="_blank" rel="noreferrer" style={{ ...primaryBtn, textDecoration: "none", padding: "6px 12px" }}>View</a>
+                  <button onClick={() => deleteCredential(c.id)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: "#B91C1C", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Remove</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
       {tab === "matches" && (
         <div style={{ display: "grid", gap: 12 }}>
-          {matchedJobs.length === 0 ? (
-            <div style={{ background: COLORS.cream, borderRadius: 14, padding: "18px 20px", border: `1px dashed ${COLORS.parchmentDeep}`, fontSize: 13, color: COLORS.textMid }}>
-              No matched jobs yet. Update your profile to unlock recommendations.
+          {matches.length === 0 ? (
+            <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>
+              No matched jobs yet. Add verified skills and credentials to unlock recommendations.
             </div>
           ) : (
-            matchedJobs.map(({ job, match }) => {
-              const status = job.title === "WordPress & Webflow Developer" ? "Applied" : "Saved";
-              const statusClass = status === "Applied" ? "badge-open" : "badge-pending";
+            matches.map((job) => {
+              const statusColor = job.status === "applied" ? "#15803D" : job.status === "saved" ? "#0369A1" : "#B45309";
               return (
-                <div key={job.id} style={{ background: COLORS.cream, borderRadius: 14, padding: "18px 20px", border: `1px solid ${COLORS.parchmentDeep}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div key={job.id} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.brownDeep }}>{job.title}</div>
-                    <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 3 }}>
-                      {job.company || "Employer"} · {getJobLocation(job)}
-                    </div>
+                    <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 3 }}>{job.company} · {job.location}</div>
                     <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                      {(job.requiredSkills || []).slice(0, 3).map((skill) => (
-                        <span key={skill} style={{ padding: "4px 10px", borderRadius: 999, background: COLORS.parchment, fontSize: 11, color: COLORS.textMid, border: `1px solid ${COLORS.parchmentDeep}` }}>
-                          {skill}
-                        </span>
+                      {job.requiredSkills.slice(0, 4).map((skill) => (
+                        <span key={skill} style={{ padding: "4px 10px", borderRadius: 999, background: COLORS.parchment, fontSize: 11, color: COLORS.textMid, border: `1px solid ${COLORS.parchmentDeep}` }}>{skill}</span>
                       ))}
                     </div>
                     <div style={{ fontSize: 11, color: COLORS.textLight, marginTop: 6 }}>
-                      Required {match.matchedRequired.length}/{(job.requiredSkills || []).length || 0} ·
-                      Preferred {match.matchedPreferred.length}/{(job.preferredSkills || []).length || 0} ·
-                      Location {match.locationMatch ? "Yes" : "No"} ·
-                      Experience {match.experienceMatch ? "Yes" : "No"}
+                      Required {job.matchedRequired}/{job.requiredCount} · Preferred {job.matchedPreferred}/{job.preferredCount} · Location {job.locationMatch ? "Yes" : "No"} · Experience {job.experienceMatch ? "Yes" : "No"}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 11, color: COLORS.textLight }}>{job.posted || "Just now"}</span>
-                      <span className={`sbph-badge ${statusClass}`}>{status}</span>
-                    </div>
+                    <span style={{ display: "inline-block", marginTop: 8, fontSize: 11, fontWeight: 700, textTransform: "capitalize", color: statusColor }}>{job.status}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 600, color: match.score >= 85 ? COLORS.success : COLORS.info }}>
-                        {match.score}%
-                      </div>
+                      <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 600, color: job.score >= 85 ? COLORS.success : COLORS.info }}>{job.score}%</div>
                       <div style={{ fontSize: 10, color: COLORS.textLight }}>match</div>
                     </div>
-                    <button style={{ padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY }}>
-                      View job
-                    </button>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <button onClick={() => pickJob(job.id, "applied")} disabled={job.status === "applied"} style={{ ...primaryBtn, opacity: job.status === "applied" ? 0.6 : 1 }}>
+                        {job.status === "applied" ? "Applied" : "Apply"}
+                      </button>
+                      <button onClick={() => pickJob(job.id, "saved")} style={{ padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Save</button>
+                    </div>
                   </div>
                 </div>
               );
@@ -310,8 +303,11 @@ export default function ProfileView({ activeTab = "skills" }) {
 
       {tab === "assessments" && (
         <div style={{ display: "grid", gap: 16 }}>
-          {companyAssessments.map((company) => (
-            <div key={company.company} style={{ background: COLORS.cream, borderRadius: 14, padding: "18px 20px", border: `1px solid ${COLORS.parchmentDeep}`, display: "grid", gap: 12 }}>
+          {assessments.length === 0 && (
+            <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>No assessments available yet.</div>
+          )}
+          {assessments.map((company) => (
+            <div key={company.company} style={{ ...cardStyle, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.brownDeep }}>{company.company}</div>
@@ -324,34 +320,12 @@ export default function ProfileView({ activeTab = "skills" }) {
                   <details key={assessment.id} style={{ borderRadius: 12, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.parchment, padding: "12px 14px" }}>
                     <summary style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontSize: 13, fontWeight: 600, color: COLORS.brownDeep, cursor: "pointer", listStyle: "none" }}>
                       <span>{company.company} - {assessment.title}</span>
-                      <span style={{ fontSize: 12, color: COLORS.textMid }}>
-                        {assessment.score ? `${assessment.score}%` : assessment.status}
-                      </span>
+                      <span style={{ fontSize: 12, color: COLORS.textMid }}>{assessment.score ? `${assessment.score}%` : assessment.status}</span>
                     </summary>
                     <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
                       <div style={{ fontSize: 12, color: COLORS.textLight }}>{assessment.summary}</div>
                       <div style={{ fontSize: 12, color: COLORS.textMid }}>
                         {assessment.questionCount} questions · {assessment.durationMinutes} min · Passing {assessment.passingScore}%
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                        <span className={`sbph-badge ${assessment.status === "Completed" ? "badge-verified" : assessment.status === "Available" ? "badge-open" : "badge-pending"}`}>
-                          {assessment.status}
-                        </span>
-                        {assessment.status === "Completed" ? (
-                          <span style={{ fontSize: 11, color: COLORS.textLight }}>Taken {assessment.date}</span>
-                        ) : (
-                          <button style={{
-                            padding: "7px 14px", borderRadius: 8,
-                            background: assessment.status === "Available" ? COLORS.info : COLORS.parchmentDeep,
-                            border: "none",
-                            color: assessment.status === "Available" ? "#fff" : COLORS.textLight,
-                            fontSize: 12, fontWeight: 600,
-                            cursor: assessment.status === "Available" ? "pointer" : "default",
-                            fontFamily: FONT_BODY,
-                          }}>
-                            {assessment.status === "Available" ? "Start Assessment" : "Awaiting access"}
-                          </button>
-                        )}
                       </div>
                     </div>
                   </details>
