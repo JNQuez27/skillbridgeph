@@ -1,6 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
-import { COLORS } from "../styles/theme";
+import { IconCheck, IconPlus } from "../components/Icons";
 import { mockApplicants } from "../data/mockData";
+
+// Local blue + green brand palette (matches the public dashboard and applicant
+// account). theme.js and the shared header are left untouched.
+const COLORS = {
+  parchment: "#F0F9FF",
+  parchmentDark: "#E0F2FE",
+  parchmentDeep: "#BAE6FD",
+  cream: "#FFFFFF",
+  brownDeep: "#0C4A6E",
+  brownMid: "#075985",
+  brownLight: "#0369A1",
+  brownWarm: "#0EA5E9",
+  rust: "#0369A1",
+  rustLight: "#0EA5E9",
+  rustBright: "#38BDF8",
+  gold: "#16A34A",
+  goldLight: "#4ADE80",
+  tan: "#BAE6FD",
+  textDark: "#0C4A6E",
+  textMid: "#075985",
+  textLight: "#64748B",
+  success: "#16A34A",
+  successLight: "#22C55E",
+  info: "#0369A1",
+  infoLight: "#0EA5E9",
+};
+
+const FONT_DISPLAY = "'Lexend', sans-serif";
+const FONT_BODY = "'Source Sans 3', sans-serif";
 import { getSession, setSession } from "../../JobSeeker/hooks/useSession";
 import { calculateMatchScore, getJobLocation, parseTagInput } from "../utils/matching";
 
@@ -492,7 +521,7 @@ export default function EmployerView() {
 
   if (isEditingProfile) {
     return (
-      <div style={{ padding: "28px 32px" }}>
+      <div style={{ padding: "28px 32px", fontFamily: FONT_BODY, background: COLORS.parchment, minHeight: "calc(100vh - 64px)" }}>
         <div style={{
           background: COLORS.cream,
           borderRadius: 20,
@@ -512,7 +541,7 @@ export default function EmployerView() {
             Company profile
           </div>
           <h2 style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Lexend', sans-serif",
             fontSize: 28,
             margin: "10px 0 6px",
             color: COLORS.brownDeep,
@@ -555,7 +584,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {errors.companyEmail && (
@@ -576,7 +605,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {errors.password && (
@@ -596,7 +625,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {errors.confirmPassword && (
@@ -636,7 +665,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {errors.companyName && (
@@ -655,7 +684,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   >
                     <option value="">Select industry</option>
@@ -679,7 +708,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   >
                     <option value="">Select size</option>
@@ -705,7 +734,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {errors.locationCity && (
@@ -725,7 +754,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {errors.locationRegion && (
@@ -765,7 +794,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {errors.recruiterName && (
@@ -786,7 +815,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {errors.recruiterPosition && (
@@ -806,7 +835,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {errors.recruiterContact && (
@@ -845,7 +874,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {formData.businessPermit && (
@@ -882,7 +911,7 @@ export default function EmployerView() {
                   fontWeight: 700,
                   fontSize: 13,
                   cursor: isFormValid ? "pointer" : "not-allowed",
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Source Sans 3', sans-serif",
                 }}
               >
                 Submit and continue
@@ -900,7 +929,7 @@ export default function EmployerView() {
                     fontWeight: 600,
                     fontSize: 13,
                     cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
                   }}
                 >
                   Back to dashboard
@@ -913,20 +942,20 @@ export default function EmployerView() {
     );
   }
   return (
-    <div style={{ padding:"12px 16px", maxWidth:1280, width:"100%", margin:"0 auto", display:"grid", gap:16 }}>
+    <div style={{ padding:"28px 32px", maxWidth:1336, width:"100%", margin:"0 auto", display:"grid", gap:16, fontFamily: FONT_BODY, background: COLORS.parchment, minHeight: "calc(100vh - 64px)" }}>
       <div style={{
         background:`linear-gradient(135deg, ${COLORS.brownDeep} 0%, ${COLORS.brownMid} 55%, ${COLORS.rust} 100%)`,
         borderRadius:16, padding:"20px 24px", color:COLORS.cream,
         display:"flex", justifyContent:"space-between", alignItems:"center",
-        gap:16, flexWrap:"wrap", border:"1px solid rgba(200,144,32,0.25)",
-        boxShadow:"0 18px 40px rgba(30, 14, 4, 0.2)"
+        gap:16, flexWrap:"wrap", border:"1px solid rgba(14,165,233,0.25)",
+        boxShadow:"0 18px 40px rgba(12, 74, 110, 0.22)"
       }}>
         <div>
           <div style={{
             fontSize:10, letterSpacing:"0.18em", textTransform:"uppercase",
             color:COLORS.goldLight, fontWeight:700
           }}>Employer workspace</div>
-          <h2 style={{ fontFamily:"'Playfair Display', serif", fontSize:24, margin:"6px 0 4px", color:COLORS.cream }}>
+          <h2 style={{ fontFamily:"'Lexend', sans-serif", fontSize:24, margin:"6px 0 4px", color:COLORS.cream }}>
             {existingProfile.companyName || "NovaByte Solutions"}
           </h2>
           <p style={{ color:"rgba(253,246,232,0.7)", fontSize:12, margin:0 }}>
@@ -937,14 +966,15 @@ export default function EmployerView() {
           <button style={{
             padding:"9px 16px", borderRadius:9,
             background:`linear-gradient(90deg, ${COLORS.gold}, ${COLORS.goldLight})`,
-            border:"none", color:COLORS.brownDeep, fontWeight:700, fontSize:12,
-            cursor:"pointer", fontFamily:"'DM Sans', sans-serif"
-          }} onClick={() => setIsJobModalOpen(true)}>+ Post new job</button>
+            border:"none", color:"#fff", fontWeight:700, fontSize:12,
+            cursor:"pointer", fontFamily:"'Source Sans 3', sans-serif",
+            display:"inline-flex", alignItems:"center", gap:6
+          }} onClick={() => setIsJobModalOpen(true)}><IconPlus size={14} /> Post new job</button>
           <button style={{
             padding:"9px 16px", borderRadius:9,
             background:"rgba(253,246,232,0.1)", border:"1px solid rgba(253,246,232,0.3)",
             color:COLORS.cream, fontWeight:600, fontSize:12,
-            cursor:"pointer", fontFamily:"'DM Sans', sans-serif"
+            cursor:"pointer", fontFamily:"'Source Sans 3', sans-serif"
           }} onClick={() => setIsInviteModalOpen(true)}>Invite candidate</button>
         </div>
       </div>
@@ -1022,7 +1052,7 @@ export default function EmployerView() {
                 fontWeight: 600,
                 fontSize: 12,
                 cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Source Sans 3', sans-serif",
                 width: "100%",
               }}
             >
@@ -1033,7 +1063,7 @@ export default function EmployerView() {
           <div style={{
             background: COLORS.cream,
             borderRadius: 12,
-            border: "1px solid rgba(193, 68, 14, 0.25)",
+            border: "1px solid rgba(3, 105, 161, 0.25)",
             padding: "14px 16px",
             display: "grid",
             gap: 10,
@@ -1047,7 +1077,7 @@ export default function EmployerView() {
             <div style={{ display: "grid", gap: 6 }}>
               {premiumBenefits.map((benefit) => (
                 <div key={benefit} style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 11, color: COLORS.textMid }}>
-                  <span style={{ color: COLORS.success, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                  <span style={{ color: COLORS.success, flexShrink: 0, display: "inline-flex", marginTop: 1 }}><IconCheck size={13} /></span>
                   <span>{benefit}</span>
                 </div>
               ))}
@@ -1063,7 +1093,7 @@ export default function EmployerView() {
                 fontWeight: 600,
                 fontSize: 12,
                 cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Source Sans 3', sans-serif",
                 width: "100%",
               }}
             >
@@ -1080,7 +1110,7 @@ export default function EmployerView() {
                 fontWeight: 600,
                 fontSize: 12,
                 cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Source Sans 3', sans-serif",
                 width: "100%",
               }}
             >
@@ -1096,7 +1126,7 @@ export default function EmployerView() {
                 padding:"9px 16px", border:"none", background:"transparent", fontSize:13,
                 fontWeight: tab===t ? 600 : 400, color: tab===t ? COLORS.rust : COLORS.textLight,
                 borderBottom: tab===t ? `2px solid ${COLORS.rust}` : "2px solid transparent",
-                cursor:"pointer", fontFamily:"'DM Sans', sans-serif", textTransform:"capitalize", whiteSpace:"nowrap"
+                cursor:"pointer", fontFamily:"'Source Sans 3', sans-serif", textTransform:"capitalize", whiteSpace:"nowrap"
               }}>{t.replace('-', ' ')}</button>
             ))}
           </div>
@@ -1122,10 +1152,11 @@ export default function EmployerView() {
                     fontWeight: 600,
                     fontSize: 12,
                     cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
+                    display: "inline-flex", alignItems: "center", gap: 6,
                   }}
                 >
-                  + Post new job
+                  <IconPlus size={14} /> Post new job
                 </button>
               </div>
 
@@ -1212,10 +1243,11 @@ export default function EmployerView() {
                     fontWeight: 600,
                     fontSize: 12,
                     cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
+                    display: "inline-flex", alignItems: "center", gap: 6,
                   }}
                 >
-                  + Post assessment
+                  <IconPlus size={14} /> Post assessment
                 </button>
               </div>
 
@@ -1368,7 +1400,7 @@ export default function EmployerView() {
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <div style={{ textAlign: "center" }}>
-                                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 600, color: displayScore >= 85 ? COLORS.success : COLORS.gold }}>
+                                <div style={{ fontFamily: "'Lexend', sans-serif", fontSize: 18, fontWeight: 600, color: displayScore >= 85 ? COLORS.success : COLORS.gold }}>
                                   {displayScore}%
                                 </div>
                                 <div style={{ fontSize: 10, color: COLORS.textLight }}>match</div>
@@ -1427,7 +1459,7 @@ export default function EmployerView() {
                 { title:"Top skill demand", data:[["React","18 applicants"],["Laravel","14 applicants"],["Figma","12 applicants"],["WordPress","10 applicants"]] },
               ]).map(block => (
                 <div key={block.title} style={{ background:COLORS.cream, borderRadius:12, padding:"18px", border:`1px solid ${COLORS.parchmentDeep}` }}>
-                  <h4 style={{ fontFamily:"'Playfair Display', serif", fontSize:16, color:COLORS.brownDeep, marginBottom:14 }}>{block.title}</h4>
+                  <h4 style={{ fontFamily:"'Lexend', sans-serif", fontSize:16, color:COLORS.brownDeep, marginBottom:14 }}>{block.title}</h4>
                   {block.data.map(([k,v],i) => {
                     const pct = [100,72,14,2.5][i] ?? 50;
                     return (
@@ -1520,7 +1552,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {jobFormErrors.title && (
@@ -1541,7 +1573,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {jobFormErrors.locationCity && (
@@ -1561,7 +1593,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                   </label>
@@ -1579,7 +1611,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     >
                       <option value="">Select type</option>
@@ -1604,7 +1636,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     >
                       <option value="">Select setup</option>
@@ -1630,7 +1662,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     >
                       <option value="Entry">Entry</option>
@@ -1652,7 +1684,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                   </label>
@@ -1671,7 +1703,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {jobFormErrors.requiredSkills && (
@@ -1692,7 +1724,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                 </label>
@@ -1710,7 +1742,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                 </label>
@@ -1727,7 +1759,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                       resize: "vertical",
                     }}
                   />
@@ -1748,7 +1780,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                       resize: "vertical",
                     }}
                   />
@@ -1769,7 +1801,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                 </label>
@@ -1788,7 +1820,7 @@ export default function EmployerView() {
                     fontWeight: 600,
                     fontSize: 12,
                     cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
                   }}
                 >
                   Cancel
@@ -1805,7 +1837,7 @@ export default function EmployerView() {
                     fontWeight: 700,
                     fontSize: 12,
                     cursor: isJobFormValid ? "pointer" : "not-allowed",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
                   }}
                 >
                   Publish job offer
@@ -1868,7 +1900,7 @@ export default function EmployerView() {
                   fontWeight: 700,
                 }}
               >
-                x
+                ×
               </button>
             </div>
 
@@ -1887,7 +1919,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {assessmentFormErrors.title && (
@@ -1907,7 +1939,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                     }}
                   />
                   {assessmentFormErrors.role && (
@@ -1929,7 +1961,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {assessmentFormErrors.questionCount && (
@@ -1950,7 +1982,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {assessmentFormErrors.durationMinutes && (
@@ -1972,7 +2004,7 @@ export default function EmployerView() {
                         background: COLORS.cream,
                         fontSize: 13,
                         color: COLORS.textDark,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Source Sans 3', sans-serif",
                       }}
                     />
                     {assessmentFormErrors.passingScore && (
@@ -1993,7 +2025,7 @@ export default function EmployerView() {
                       background: COLORS.cream,
                       fontSize: 13,
                       color: COLORS.textDark,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Source Sans 3', sans-serif",
                       resize: "vertical",
                     }}
                   />
@@ -2013,7 +2045,7 @@ export default function EmployerView() {
                     fontWeight: 600,
                     fontSize: 12,
                     cursor: "pointer",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
                   }}
                 >
                   Cancel
@@ -2030,7 +2062,7 @@ export default function EmployerView() {
                     fontWeight: 700,
                     fontSize: 12,
                     cursor: isAssessmentFormValid ? "pointer" : "not-allowed",
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Source Sans 3', sans-serif",
                   }}
                 >
                   Publish assessment
@@ -2149,7 +2181,7 @@ export default function EmployerView() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 600, color: candidate.score >= 90 ? COLORS.success : COLORS.gold }}>
+                      <div style={{ fontFamily: "'Lexend', sans-serif", fontSize: 18, fontWeight: 600, color: candidate.score >= 90 ? COLORS.success : COLORS.gold }}>
                         {candidate.score}%
                       </div>
                       <div style={{ fontSize: 10, color: COLORS.textLight }}>skill score</div>

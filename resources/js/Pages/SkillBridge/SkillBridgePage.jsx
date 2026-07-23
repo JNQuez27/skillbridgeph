@@ -9,6 +9,14 @@ import BrowseJobs from "./views/BrowseJobs";
 import UserProfile from "./views/UserProfile";
 import EmployerDashboard from "./views/EmployerDashboard";
 import ArchitectureView from "./views/ArchitectureView";
+import {
+  IconZap,
+  IconBriefcase,
+  IconTarget,
+  IconClipboardCheck,
+  IconSettings,
+  IconLogout,
+} from "./components/Icons";
 
 export default function SkillBridgePage({ initialView = "general-dashboard", initialRole = "jobseeker", requiresAuth = false }) {
   const [view, setView] = useState(initialView);
@@ -16,6 +24,22 @@ export default function SkillBridgePage({ initialView = "general-dashboard", ini
   const [isAuthenticated, setIsAuthenticated] = useState(getAuthState());
   const [session, setSession] = useState(getSession());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  const [accountTab, setAccountTab] = useState("skills");
+
+  // Jobseeker account sections — surfaced from the profile menu (not the top nav).
+  const accountSections = [
+    { key: "skills", label: "Skills", Icon: IconZap },
+    { key: "portfolio", label: "Portfolio", Icon: IconBriefcase },
+    { key: "matches", label: "Matches", Icon: IconTarget },
+    { key: "assessments", label: "Assessment", Icon: IconClipboardCheck },
+  ];
+
+  const openAccountSection = (tab) => {
+    setAccountTab(tab);
+    setView("jobseeker-dashboard");
+    setIsMenuOpen(false);
+  };
 
   useEffect(() => {
     setView(initialView);
@@ -55,6 +79,48 @@ export default function SkillBridgePage({ initialView = "general-dashboard", ini
     return () => window.removeEventListener("click", handleClick);
   }, [isMenuOpen]);
 
+
+  // Public dashboard nav — each item routes to a section on GeneralDashboard.
+  // Auth-only items (Messages, Notifications) are excluded since those sections
+  // do not exist on the public dashboard.
+  const publicNavLinks = [
+    { label: "Home", target: "home" },
+    { label: "Process", target: "process" },
+    { label: "Industry", target: "industry" },
+    { label: "Benefit", target: "benefit" },
+    { label: "Testimonial", target: "testimonial" },
+    { label: "FAQs", target: "faqs" },
+  ];
+
+  const scrollToSection = (event, target) => {
+    event.preventDefault();
+    const el = document.getElementById(target);
+    if (el) {
+      setActiveSection(target);
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // Section only exists on the public dashboard — route there with the hash.
+      window.location.href = `/#${target}`;
+    }
+  };
+
+  // Scroll-spy: highlight the nav item whose section is currently in view.
+  useEffect(() => {
+    const els = publicNavLinks
+      .map((link) => document.getElementById(link.target))
+      .filter(Boolean);
+    if (!els.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [view, isAuthenticated]);
 
   const handleViewChange = (newView) => {
     if (newView === 'landing') {
@@ -110,8 +176,11 @@ export default function SkillBridgePage({ initialView = "general-dashboard", ini
 
     // Authenticated users
     switch (view) {
+      case 'general-dashboard':
+      case 'overview':
+        return <GeneralDashboard />;
       case 'jobseeker-dashboard':
-        return <UserProfile />;
+        return <UserProfile activeTab={accountTab} onTabChange={setAccountTab} />;
       case 'browse-jobs':
         return <BrowseJobs />;
       case 'employer-dashboard':
@@ -120,7 +189,7 @@ export default function SkillBridgePage({ initialView = "general-dashboard", ini
         return <ArchitectureView />;
       default:
         // Default to the appropriate dashboard based on role
-        return role === 'employer' ? <EmployerDashboard /> : <UserProfile />;
+        return role === 'employer' ? <EmployerDashboard /> : <UserProfile activeTab={accountTab} onTabChange={setAccountTab} />;
     }
   };
 
@@ -174,55 +243,52 @@ export default function SkillBridgePage({ initialView = "general-dashboard", ini
             flex: 1,
             justifyContent: "center",
           }}>
-            {[
-              "Home",
-              "Process",
-              "Industry",
-              "Benefit",
-              "Testimonial",
-              "FAQs",
-              "Messages",
-              "Notifications",
-            ].map((item) => (
-              <span key={item}>{item}</span>
+            {publicNavLinks.map((item) => (
+              <a
+                key={item.label}
+                href={`#${item.target}`}
+                onClick={(event) => scrollToSection(event, item.target)}
+                className={`sbph-nav-link${activeSection === item.target ? " active" : ""}`}
+                aria-current={activeSection === item.target ? "true" : undefined}
+              >
+                {item.label}
+              </a>
             ))}
           </nav>
           {isAuthenticated ? (
             <div
               data-user-menu
-              style={{ display: "flex", gap: 10, alignItems: "center", position: "relative" }}
+              style={{ position: "relative" }}
             >
               <button
                 type="button"
+                className="sbph-usertrigger"
                 onClick={() => setIsMenuOpen((prev) => !prev)}
                 aria-haspopup="menu"
                 aria-expanded={isMenuOpen}
-                style={{
-                  width: 36,
-                  height: 36,
+              >
+                <span style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: COLORS.brownDeep,
+                }}>
+                  {getDisplayName()}
+                </span>
+                <span style={{
+                  width: 34,
+                  height: 34,
                   borderRadius: "50%",
-                  border: `1px solid ${COLORS.parchmentDeep}`,
-                  background: COLORS.brownDeep,
-                  color: COLORS.cream,
+                  background: `linear-gradient(135deg, ${COLORS.info}, ${COLORS.success})`,
+                  color: "#fff",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 14,
                   fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {getAvatarLabel()}
+                }}>
+                  {getAvatarLabel()}
+                </span>
               </button>
-              <div style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: COLORS.brownDeep,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}>
-                {getDisplayName()}
-              </div>
               {isMenuOpen && (
                 <div
                   role="menu"
@@ -230,52 +296,61 @@ export default function SkillBridgePage({ initialView = "general-dashboard", ini
                     position: "absolute",
                     top: "calc(100% + 10px)",
                     right: 0,
-                    minWidth: 160,
-                    background: COLORS.cream,
+                    minWidth: 220,
+                    background: "#fff",
                     border: `1px solid ${COLORS.parchmentDeep}`,
-                    borderRadius: 12,
-                    boxShadow: "0 14px 30px rgba(82, 64, 39, 0.15)",
+                    borderRadius: 14,
+                    boxShadow: "0 18px 40px rgba(11, 29, 58, 0.16)",
                     padding: 8,
                     display: "flex",
                     flexDirection: "column",
-                    gap: 6,
+                    gap: 2,
                     zIndex: 10,
                   }}
                 >
+                  <div style={{ padding: "8px 12px 10px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.brownDeep }}>{getDisplayName()}</div>
+                    <div style={{ fontSize: 11, color: COLORS.textLight, textTransform: "capitalize" }}>
+                      {role === "employer" ? "Employer account" : "Applicant account"}
+                    </div>
+                  </div>
+                  {role !== "employer" && (
+                    <>
+                      <div style={{ height: 1, background: COLORS.parchmentDeep, margin: "2px 6px 6px" }} />
+                      {accountSections.map(({ key, label, Icon }) => {
+                        const isActive = view === "jobseeker-dashboard" && accountTab === key;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            role="menuitem"
+                            className={`sbph-menu-item${isActive ? " active" : ""}`}
+                            onClick={() => openAccountSection(key)}
+                          >
+                            <Icon size={16} />
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </>
+                  )}
+                  <div style={{ height: 1, background: COLORS.parchmentDeep, margin: "6px 6px" }} />
                   <button
                     type="button"
                     role="menuitem"
+                    className="sbph-menu-item"
                     onClick={() => handleViewChange("settings")}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      color: COLORS.brownDeep,
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textAlign: "left",
-                      cursor: "pointer",
-                    }}
                   >
+                    <IconSettings size={16} />
                     Settings
                   </button>
                   <button
                     type="button"
                     role="menuitem"
+                    className="sbph-menu-item sbph-menu-item--danger"
                     onClick={handleLogout}
-                    style={{
-                      border: "none",
-                      background: COLORS.brownDeep,
-                      color: COLORS.cream,
-                      padding: "8px 12px",
-                      borderRadius: 10,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textAlign: "left",
-                      cursor: "pointer",
-                    }}
                   >
+                    <IconLogout size={16} />
                     Logout
                   </button>
                 </div>

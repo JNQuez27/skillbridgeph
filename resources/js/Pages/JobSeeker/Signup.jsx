@@ -24,49 +24,37 @@ function SignupContent() {
     jobseeker: {
       title: "Create your Applicant account",
       subtitle: "Join SkillBridge PH and start building your skill-based profile.",
-      helper: "Looking for work",
     },
     employer: {
       title: "Create your Employer account",
       subtitle: "Start posting roles and reviewing verified candidates.",
-      helper: "Hiring teams",
     },
   };
 
   const roleOptions = [
-    {
-      key: "jobseeker",
-      label: "Applicant",
-      description: "Fresh graduates and applicants",
-    },
-    {
-      key: "employer",
-      label: "Employer",
-      description: "Companies hiring talent",
-    },
+    { key: "jobseeker", label: "Applicant" },
+    { key: "employer", label: "Employer" },
   ];
 
   const errors = useMemo(() => {
     return {
       firstName: firstName.trim().length === 0 ? "First name is required" : "",
-      middleName: middleName.trim().length === 0 ? "Middle name is required" : "",
       surname: surname.trim().length === 0 ? "Surname is required" : "",
       email: email.length > 0 && !emailRegex.test(email) ? "Enter a valid email" : "",
       password: password.length > 0 && password.length < 8 ? "Minimum 8 characters" : "",
       confirm: confirm.length > 0 && confirm !== password ? "Passwords do not match" : "",
     };
-  }, [firstName, middleName, surname, email, password, confirm]);
+  }, [firstName, surname, email, password, confirm]);
 
   const isValid = useMemo(() => {
     return (
       firstName.trim().length > 0 &&
-      middleName.trim().length > 0 &&
       surname.trim().length > 0 &&
       emailRegex.test(email) &&
       password.length >= 8 &&
       confirm === password
     );
-  }, [firstName, middleName, surname, email, password, confirm]);
+  }, [firstName, surname, email, password, confirm]);
 
   const buildFullName = (first, middle, last) => {
     return [first, middle, last].map((value) => value.trim()).filter(Boolean).join(" ");
@@ -105,35 +93,24 @@ function SignupContent() {
       subtitle={roleCopy[role].subtitle}
     >
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div className="rounded-2xl border border-emerald-100 bg-white/80 p-4">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.35em] text-emerald-600">
-            <span>Choose account type</span>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] text-emerald-700">
-              {roleCopy[role].helper}
-            </span>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {roleOptions.map((option) => {
-              const isActive = role === option.key;
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  aria-pressed={isActive}
-                  onClick={() => setRole(option.key)}
-                  className={`rounded-xl border px-4 py-3 text-left text-sm transition ${isActive
-                    ? "border-emerald-500 bg-emerald-50/80 text-emerald-900 shadow-sm"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/40"
-                  }`}
-                >
-                  <div className="text-sm font-semibold">{option.label}</div>
-                  <div className={`mt-1 text-xs ${isActive ? "text-emerald-700" : "text-slate-500"}`}>
-                    {option.description}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        <div className="grid grid-cols-2 gap-1 rounded-xl bg-sky-50 p-1">
+          {roleOptions.map((option) => {
+            const isActive = role === option.key;
+            return (
+              <button
+                key={option.key}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setRole(option.key)}
+                className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${isActive
+                  ? "bg-white text-sky-800 shadow-sm"
+                  : "text-slate-500 hover:text-sky-700"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
         </div>
         <Input
           id="signup-first-name"
@@ -145,11 +122,10 @@ function SignupContent() {
         />
         <Input
           id="signup-middle-name"
-          label="Middle Name"
+          label="Middle Name (optional)"
           placeholder="Lopez"
           value={middleName}
           onChange={(event) => setMiddleName(event.target.value)}
-          error={errors.middleName}
         />
         <Input
           id="signup-surname"
@@ -191,7 +167,7 @@ function SignupContent() {
         </Button>
         <p className="text-center text-xs text-slate-500">
           Already have an account?{" "}
-          <a className="font-semibold text-emerald-600 hover:text-emerald-700" href="/login">
+          <a className="font-semibold text-sky-700 hover:text-sky-800" href="/login">
             Log in
           </a>
         </p>

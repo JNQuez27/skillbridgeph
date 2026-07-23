@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -6,8 +7,9 @@
 @source '../**/*.{js,jsx}';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Lexend', ui-sans-serif, system-ui, sans-serif;
 }
 
 .sbph-category-card {
@@ -26,4 +28,70 @@
 
 .sbph-faq summary::-webkit-details-marker {
     display: none;
+}
+
+/* ---- Sliding auth shell (login right / signup left, overlay slides) ---- */
+.auth-shell {
+    position: relative;
+    width: 100%;
+    max-width: 60rem;
+    height: 640px;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    box-shadow: 0 30px 60px rgba(12, 74, 110, 0.18);
+}
+.auth-pane {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    overflow-y: auto;
+    background: #ffffff;
+}
+.auth-pane-left { left: 0; }
+.auth-pane-right { left: 50%; }
+.auth-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    z-index: 20;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+}
+.auth-shell.mode-signup .auth-overlay { transform: translateX(100%); }
+.auth-overlay-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2.5rem;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+.auth-overlay-panel.is-visible { opacity: 1; }
+
+@media (max-width: 767px) {
+    .auth-shell {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        max-width: 28rem;
+        border-radius: 1rem;
+    }
+    .auth-pane { position: static; width: 100%; overflow: visible; }
+    .auth-pane.is-hidden-mobile { display: none; }
+    .auth-overlay {
+        position: static;
+        width: 100%;
+        height: auto;
+        transform: none !important;
+        order: -1;
+    }
+    .auth-overlay-panel { position: static; opacity: 1; padding: 1.75rem; }
+    .auth-overlay-panel.is-hidden-mobile { display: none; }
 }

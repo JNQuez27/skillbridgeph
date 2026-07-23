@@ -13,7 +13,7 @@ export default function Input({
       <div className="relative">
         <input
           id={id}
-          className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 ${rightSlot ? "pr-12" : ""} ${className}`}
+          className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 ${rightSlot ? "pr-12" : ""} ${className}`}
           {...props}
         />
         {rightSlot && <div className="absolute inset-y-0 right-3 flex items-center">{rightSlot}</div>}

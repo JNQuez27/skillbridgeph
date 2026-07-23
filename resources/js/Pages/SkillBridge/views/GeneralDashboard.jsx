@@ -1,4 +1,93 @@
-import { COLORS } from "../styles/theme";
+import { useEffect, useRef, useState } from "react";
+
+// Local palette for the public dashboard ONLY (Job Board / Recruitment scheme
+// from ui-ux-pro-max: professional blue + verified green, WCAG-tuned).
+// theme.js and the shared header are intentionally left untouched.
+const COLORS = {
+  parchment: "#F0F9FF",     // page background
+  parchmentDark: "#E0F2FE", // deeper background band
+  parchmentDeep: "#BAE6FD", // borders / hairlines
+  cream: "#FFFFFF",         // cards / surfaces
+  brownDeep: "#0C4A6E",     // deep brand blue — titles, dark buttons, avatars
+  brownMid: "#075985",      // strong blue
+  brownLight: "#0369A1",    // primary blue
+  brownWarm: "#0EA5E9",     // secondary sky blue
+  rust: "#0369A1",          // eyebrow/badge accent → primary blue
+  rustLight: "#0EA5E9",
+  rustBright: "#38BDF8",
+  gold: "#16A34A",          // verified / success accent (green)
+  goldLight: "#4ADE80",     // positive metric numbers on dark
+  tan: "#BAE6FD",
+  textDark: "#0C4A6E",      // foreground
+  textMid: "#075985",
+  textLight: "#64748B",     // muted foreground
+  success: "#16A34A",
+  successLight: "#22C55E",
+  info: "#0369A1",
+  infoLight: "#0EA5E9",
+};
+
+// Scroll-reveal wrapper: fades + slides content into view as it enters the
+// viewport (HopeRise-style). Honors reduced-motion and reveals only once.
+function Reveal({ children, as: Tag = "div", style, delay = 0, from = "up", ...rest }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(true);
+      return;
+    }
+    // Replay every time the element enters OR leaves the viewport, so the
+    // animation re-triggers on each scroll up or down (not just once).
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0.15, rootMargin: "0px 0px -12% 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const offset =
+    from === "left" ? "translateX(-48px)"
+    : from === "right" ? "translateX(48px)"
+    : from === "scale" ? "scale(0.94)"
+    : "translateY(48px)";
+
+  return (
+    <Tag
+      ref={ref}
+      style={{
+        ...style,
+        opacity: visible ? 1 : 0,
+        transform: visible ? undefined : offset,
+        transition: `opacity 0.8s ease ${delay}ms, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms`,
+        willChange: "opacity, transform",
+      }}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+}
+
+const dashboardStyles = `
+  .sbph-lift { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease; }
+  .sbph-lift:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(11, 29, 58, 0.16); }
+  .sbph-category-card:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(11, 29, 58, 0.16); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease; }
+  .sbph-faq { transition: box-shadow 0.3s ease, border-color 0.3s ease; }
+  .sbph-faq[open] { box-shadow: 0 16px 34px rgba(11, 29, 58, 0.1); }
+  .sbph-footer-grid { grid-template-columns: 1.6fr 1fr 1fr 1.3fr; }
+  @media (max-width: 860px) { .sbph-footer-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .sbph-footer-grid { grid-template-columns: 1fr; } }
+  .sbph-footer-link { transition: color 0.2s ease, transform 0.2s ease; cursor: pointer; }
+  .sbph-footer-link:hover { color: #FFD98A; transform: translateX(3px); }
+  @media (prefers-reduced-motion: reduce) {
+    .sbph-lift, .sbph-category-card, .sbph-faq, .sbph-footer-link { transition: none; }
+  }
+`;
 
 const styles = {
   page: {
@@ -6,13 +95,14 @@ const styles = {
     flexDirection: "column",
     gap: "0",
     padding: "0",
-    background: `radial-gradient(circle at 12% 8%, rgba(243,199,78,0.22), transparent 40%),
-      radial-gradient(circle at 88% 12%, rgba(46,140,123,0.14), transparent 42%),
+    fontFamily: "'Source Sans 3', sans-serif",
+    background: `radial-gradient(circle at 12% 8%, rgba(14,165,233,0.16), transparent 40%),
+      radial-gradient(circle at 88% 12%, rgba(22,163,74,0.12), transparent 42%),
       linear-gradient(180deg, ${COLORS.parchment} 0%, ${COLORS.cream} 45%, ${COLORS.parchmentDark} 100%)`,
   },
   hero: {
     borderRadius: "0",
-    padding: "40px 64px",
+    padding: "clamp(56px, 8vh, 104px) clamp(24px, 5vw, 72px)",
     background: `linear-gradient(135deg, ${COLORS.cream} 0%, ${COLORS.parchment} 60%, ${COLORS.parchmentDark} 100%)`,
     color: COLORS.brownDeep,
     boxShadow: "0 32px 70px rgba(11, 29, 58, 0.16)",
@@ -20,12 +110,12 @@ const styles = {
     gap: "32px",
     position: "relative",
     overflow: "hidden",
-    minHeight: "100vh",
+    scrollMarginTop: "72px",
   },
   heroGlow: {
     position: "absolute",
     inset: 0,
-    background: "radial-gradient(circle at 12% 8%, rgba(243,199,78,0.2), transparent 46%)",
+    background: "radial-gradient(circle at 12% 8%, rgba(14,165,233,0.14), transparent 46%)",
     pointerEvents: "none",
   },
   navLogo: {
@@ -46,18 +136,20 @@ const styles = {
     gap: "16px",
   },
   heroTitle: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: "clamp(34px, 4.6vw, 58px)",
+    fontFamily: "'Lexend', sans-serif",
+    fontSize: "clamp(42px, 6.4vw, 82px)",
     fontWeight: 700,
+    lineHeight: 1.04,
+    letterSpacing: "-0.015em",
     margin: 0,
     color: COLORS.brownDeep,
   },
   heroText: {
-    fontSize: "15px",
+    fontSize: "clamp(15px, 1.3vw, 18px)",
     lineHeight: 1.7,
     color: COLORS.textMid,
     margin: 0,
-    maxWidth: "54ch",
+    maxWidth: "56ch",
   },
   heroActions: {
     display: "flex",
@@ -73,7 +165,7 @@ const styles = {
     fontSize: "13px",
     fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 16px 32px rgba(46, 140, 123, 0.3)",
+    boxShadow: "0 16px 32px rgba(22, 163, 74, 0.28)",
   },
   ghostButton: {
     border: `1px solid ${COLORS.parchmentDeep}`,
@@ -116,50 +208,54 @@ const styles = {
   },
   section: {
     background: COLORS.cream,
-    border: `1px solid ${COLORS.parchmentDeep}`,
+    borderTop: `1px solid ${COLORS.parchmentDeep}`,
     borderRadius: "0",
-    padding: "64px",
-    boxShadow: "0 18px 42px rgba(11, 29, 58, 0.08)",
+    padding: "clamp(56px, 8vh, 96px) clamp(24px, 5vw, 72px)",
     display: "flex",
     flexDirection: "column",
-    gap: "28px",
-    minHeight: "100vh",
+    gap: "40px",
+    scrollMarginTop: "72px",
   },
   sectionSplit: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-    gap: "32px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "48px",
     alignItems: "center",
   },
   sectionCenter: {
     display: "grid",
-    gap: "12px",
+    gap: "14px",
     textAlign: "center",
     justifyItems: "center",
+    maxWidth: "62ch",
+    margin: "0 auto",
   },
   sectionBadge: {
-    padding: "6px 12px",
+    padding: "7px 16px",
     borderRadius: "999px",
-    background: "rgba(243,199,78,0.18)",
-    border: "1px solid rgba(243,199,78,0.35)",
+    background: "rgba(3,105,161,0.10)",
+    border: "1px solid rgba(3,105,161,0.24)",
     fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: "0.2em",
+    fontWeight: 700,
+    letterSpacing: "0.32em",
     textTransform: "uppercase",
-    color: COLORS.rust,
+    color: COLORS.brownLight,
   },
   sectionTitle: {
     margin: 0,
-    fontSize: "24px",
-    fontWeight: 800,
+    fontFamily: "'Lexend', sans-serif",
+    fontSize: "clamp(28px, 3.6vw, 48px)",
+    fontWeight: 700,
+    lineHeight: 1.08,
+    letterSpacing: "-0.01em",
     color: COLORS.brownDeep,
   },
   sectionText: {
     margin: 0,
-    fontSize: "14px",
-    lineHeight: 1.7,
+    fontSize: "clamp(14px, 1.15vw, 16px)",
+    lineHeight: 1.75,
     color: COLORS.textLight,
-    maxWidth: "70ch",
+    maxWidth: "68ch",
   },
   stepList: {
     display: "grid",
@@ -432,24 +528,24 @@ const styles = {
     justifySelf: "start",
   },
   footer: {
-    background: COLORS.brownDeep,
+    background: `linear-gradient(160deg, ${COLORS.brownDeep} 0%, ${COLORS.brownMid} 100%)`,
     color: COLORS.cream,
     borderRadius: "0",
-    padding: "64px",
+    padding: "clamp(56px, 7vh, 88px) clamp(24px, 5vw, 72px) 40px",
     display: "grid",
-    gap: "28px",
-    minHeight: "100vh",
+    gap: "40px",
   },
   footerGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "24px",
+    gap: "40px",
   },
   footerTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 700,
-    margin: 0,
-    color: COLORS.cream,
+    margin: "0 0 4px",
+    color: COLORS.goldLight,
+    textTransform: "uppercase",
+    letterSpacing: "0.16em",
   },
   footerText: {
     fontSize: 12,
@@ -629,11 +725,12 @@ const paymentMethods = ["PayMaya", "GCash", "Visa", "Mastercard", "PayPal", "Uni
 export default function GeneralDashboard() {
   return (
     <div style={styles.page}>
-      <section style={styles.hero}>
+      <style>{dashboardStyles}</style>
+      <section id="home" style={styles.hero}>
         <div style={styles.heroGlow} />
         <div style={{ position: "relative", zIndex: 1, display: "grid", gap: "36px" }}>
           <div style={styles.heroBody}>
-            <div style={styles.heroColumn}>
+            <Reveal style={styles.heroColumn} from="left">
               <h1 style={styles.heroTitle}>Smart hiring starts with verified skills.</h1>
               <p style={styles.heroText}>
                 SkillBridge PH connects verified talent with real hiring demand across the Philippines.
@@ -655,9 +752,9 @@ export default function GeneralDashboard() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Reveal>
 
-            <div style={styles.heroProfileWrap}>
+            <Reveal style={styles.heroProfileWrap} from="right" delay={150}>
               <div style={styles.heroImageFrame}>
                 <img
                   src="/images/skillbridge-hero.png"
@@ -665,14 +762,14 @@ export default function GeneralDashboard() {
                   style={styles.heroImage}
                 />
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      <section style={styles.section}>
+      <section id="process" style={styles.section}>
         <div style={styles.sectionSplit}>
-          <div style={styles.heroColumn}>
+          <Reveal style={styles.heroColumn} from="left">
             <span style={styles.sectionBadge}>How it works</span>
             <h2 style={styles.sectionTitle}>From profile to hire in one flow</h2>
             <p style={styles.sectionText}>
@@ -689,10 +786,10 @@ export default function GeneralDashboard() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
           <div style={styles.jobGrid}>
-            {jobCards.map((job) => (
-              <div key={job.title} style={styles.jobCard}>
+            {jobCards.map((job, index) => (
+              <Reveal key={job.title} style={styles.jobCard} className="sbph-lift" delay={index * 90}>
                 <div style={styles.jobCardTop}>
                   <span style={styles.jobTag}>{job.tag}</span>
                   <span style={styles.jobMatch}>{job.match}</span>
@@ -700,34 +797,34 @@ export default function GeneralDashboard() {
                 <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.textDark }}>{job.title}</div>
                 <div style={styles.jobMeta}>{job.company}</div>
                 <div style={styles.jobMeta}>{job.location}</div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section style={styles.section}>
-        <div style={styles.sectionCenter}>
+      <section id="industry" style={styles.section}>
+        <Reveal style={styles.sectionCenter}>
           <span style={styles.sectionBadge}>Industries</span>
           <h2 style={styles.sectionTitle}>Browse by category</h2>
           <p style={styles.sectionText}>
             Explore open roles by industry focus and verified skill demand.
           </p>
-        </div>
+        </Reveal>
         <div style={styles.categoryGrid}>
-          {categoryCards.map((category) => (
-            <div key={category.title} style={styles.categoryCard} className="sbph-category-card">
+          {categoryCards.map((category, index) => (
+            <Reveal key={category.title} style={styles.categoryCard} className="sbph-category-card" delay={index * 90}>
               <div style={styles.categoryIcon}>{category.icon}</div>
               <div style={styles.categoryTitle}>{category.title}</div>
               <div style={styles.categoryMeta}>{category.meta}</div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      <section style={styles.section}>
+      <section id="benefit" style={styles.section}>
         <div style={styles.sectionSplit}>
-          <div style={styles.employerVisual}>
+          <Reveal style={styles.employerVisual} from="left">
             <div style={styles.employerHeader}>
               <span>Employer dashboard</span>
               <span>Live pipeline</span>
@@ -759,8 +856,8 @@ export default function GeneralDashboard() {
                 ))}
               </div>
             </div>
-          </div>
-          <div style={styles.heroColumn}>
+          </Reveal>
+          <Reveal style={styles.heroColumn} from="right" delay={120}>
             <span style={styles.sectionBadge}>Why employers choose us</span>
             <h2 style={styles.sectionTitle}>Hire with clarity, speed, and confidence</h2>
             <p style={styles.sectionText}>
@@ -775,34 +872,34 @@ export default function GeneralDashboard() {
               ))}
             </ul>
             <button style={styles.primaryButton} onClick={() => window.location.href = "/signup"}>Post a job</button>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      <section style={styles.section}>
-        <div style={styles.sectionCenter}>
+      <section id="testimonial" style={styles.section}>
+        <Reveal style={styles.sectionCenter}>
           <span style={styles.sectionBadge}>Testimonials</span>
           <h2 style={styles.sectionTitle}>What teams and candidates say</h2>
           <p style={styles.sectionText}>
             Real feedback from employers and applicants using SkillBridge PH.
           </p>
-        </div>
+        </Reveal>
         <div style={styles.testimonialGrid}>
-          {testimonials.map((item) => (
-            <div key={item.name} style={styles.testimonialCard}>
+          {testimonials.map((item, index) => (
+            <Reveal key={item.name} style={styles.testimonialCard} className="sbph-lift" delay={index * 110}>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: COLORS.textDark }}>
                 "{item.quote}"
               </p>
               <p style={{ margin: 0, fontSize: 12, color: COLORS.textLight }}>{item.name}</p>
               <p style={{ margin: 0, fontSize: 11, color: COLORS.textMid }}>{item.role}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      <section style={styles.section}>
+      <section id="faqs" style={styles.section}>
         <div style={styles.faqSplit}>
-          <div style={styles.heroColumn}>
+          <Reveal style={styles.heroColumn} from="left">
             <span style={styles.sectionBadge}>FAQ</span>
             <h2 style={styles.sectionTitle}>Frequently asked questions</h2>
             <p style={styles.sectionText}>
@@ -819,22 +916,22 @@ export default function GeneralDashboard() {
                 </details>
               ))}
             </div>
-          </div>
+          </Reveal>
           <div style={styles.ctaGrid}>
-            {faqCtas.map((cta) => (
-              <div key={cta.title} style={cta.tone === "accent" ? styles.ctaCardAlt : styles.ctaCard}>
+            {faqCtas.map((cta, index) => (
+              <Reveal key={cta.title} style={cta.tone === "accent" ? styles.ctaCardAlt : styles.ctaCard} className="sbph-lift" from="right" delay={index * 120}>
                 <h3 style={styles.ctaTitle}>{cta.title}</h3>
                 <p style={styles.ctaText}>{cta.text}</p>
                 <button style={styles.ctaButton}>{cta.action}</button>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       <footer style={styles.footer}>
-        <div style={styles.footerGrid}>
-          <div style={styles.heroColumn}>
+        <div style={styles.footerGrid} className="sbph-footer-grid">
+          <Reveal style={styles.heroColumn} delay={0}>
             <div style={styles.navLogo}>SkillBridge PH</div>
             <p style={styles.footerText}>
               A verified hiring platform connecting applicants and employers through proof-based skills.
@@ -844,20 +941,20 @@ export default function GeneralDashboard() {
                 <span key={social} style={styles.socialBadge}>{social}</span>
               ))}
             </div>
-          </div>
-          <div style={styles.heroColumn}>
+          </Reveal>
+          <Reveal style={styles.heroColumn} delay={90}>
             <h3 style={styles.footerTitle}>Company info</h3>
             {footerLinks.map((link) => (
-              <span key={link} style={styles.footerLink}>{link}</span>
+              <span key={link} style={styles.footerLink} className="sbph-footer-link">{link}</span>
             ))}
-          </div>
-          <div style={styles.heroColumn}>
+          </Reveal>
+          <Reveal style={styles.heroColumn} delay={180}>
             <h3 style={styles.footerTitle}>Top categories</h3>
             {footerCategories.map((category) => (
-              <span key={category} style={styles.footerLink}>{category}</span>
+              <span key={category} style={styles.footerLink} className="sbph-footer-link">{category}</span>
             ))}
-          </div>
-          <div style={styles.heroColumn}>
+          </Reveal>
+          <Reveal style={styles.heroColumn} delay={270}>
             <h3 style={styles.footerTitle}>Download the app</h3>
             <p style={styles.footerText}>Quezon City, Philippines</p>
             <p style={styles.footerText}>+63 917 123 4567</p>
@@ -865,8 +962,9 @@ export default function GeneralDashboard() {
               <span style={styles.appButton}>Get it on Google Play</span>
               <span style={styles.appButton}>Download on the App Store</span>
             </div> */}
-          </div>
+          </Reveal>
         </div>
+        <div style={{ height: 1, background: "rgba(253,246,232,0.14)" }} />
         <div style={styles.paymentRow}>
           <h3 style={styles.footerTitle}>We Accept Payment Gateway</h3>
           <div style={styles.paymentList}>
