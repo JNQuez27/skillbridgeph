@@ -1,59 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SkillBridge PH
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**A skills-based job matching platform for the Philippines.** SkillBridge PH connects
+verified talent with real hiring demand by matching applicants to employer job posts
+**autonomously**, based on proof-of-skill rather than resumes alone.
 
-## About Laravel
+> Smart hiring starts with verified skills.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## What it does
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+SkillBridge PH is a two-sided platform:
 
-## Learning Laravel
+- **Applicants (job seekers)** build a skills-based profile, earn verified skill badges
+  (via assessments, scenarios, or portfolio review), upload their credentials, and state
+  the roles they want. The system then **automatically surfaces jobs that fit them** and
+  flags those matches to their account — the applicant only picks the ones truly suited to them.
+- **Employers** post job offers and company assessments, and the system **automatically
+  ranks matching candidates** by verified-skill fit so they can shortlist and invite quickly.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+The connecting layer between both sides is the **autonomous matching engine**.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Core feature — Autonomous skill matching
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Matching runs automatically in both directions from a single scoring function
+([`resources/js/Pages/SkillBridge/utils/matching.js`](resources/js/Pages/SkillBridge/utils/matching.js)):
 
-### Premium Partners
+| Signal | Weight | Notes |
+|---|---:|---|
+| Required skills matched | up to **60%** | share of a job's required skills the candidate has (verified skills preferred) |
+| Preferred skills matched | up to **25%** | share of a job's preferred/nice-to-have skills |
+| Location match | **10%** | candidate location overlaps the job's city/region |
+| Experience level match | **5%** | candidate level equals the job's required level |
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+The result is a **0–100 match score**. The platform then:
 
-## Contributing
+- **For applicants** — flags jobs scoring **≥ 60%** to the account's **Matches** section, so
+  fitting roles find the applicant instead of the applicant hunting blindly.
+- **For employers** — surfaces candidates scoring **≥ 70%** per job post, ranked highest-first,
+  ready to shortlist or invite.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Because both sides feed the same engine, matching is **autonomous**: as soon as an employer
+posts a role or an applicant updates their verified skills/credentials, new matches appear on
+the relevant accounts without any manual search.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Roles & key screens
 
-## Security Vulnerabilities
+**Public dashboard** (no account required) — landing/overview with how-it-works, industries,
+employer preview, testimonials, and FAQs, plus scroll animations and a section-aware nav.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Applicant account**
+- **Skills & Badges** — verified skill badges and badge pathways (assessment / scenario / portfolio).
+- **Portfolio** — showcased work and case studies.
+- **Matches** — jobs the engine flagged as a fit, with per-job match breakdown.
+- **Assessments** — company assessments and results.
+- **Credential upload** — resume/CV, certificates, and portfolio evidence.
+
+**Employer account**
+- **Job offers** — post and manage roles with required/preferred skills.
+- **Assessments** — build company assessments with auto-scoring.
+- **Matches** — ranked candidate recommendations per role.
+- **Analytics** — hiring funnel and top skill demand.
+- **Invite candidates** — reach out to top-matched applicants.
+
+---
+
+## Tech stack
+
+- **Backend:** [Laravel 12](https://laravel.com) (PHP 8.2+)
+- **Frontend:** [React 18](https://react.dev) via [Inertia.js](https://inertiajs.com)
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com) + inline design tokens
+- **Build:** [Vite 7](https://vitejs.dev)
+- **Database:** SQLite (default; swappable to MySQL/PostgreSQL)
+- **Fonts:** Lexend (display) + Source Sans 3 (body)
+- **Palette:** professional blue `#0369A1` + verified-green `#16A34A`
+
+---
+
+## Project structure
+
+```
+resources/js/Pages/
+├─ SkillBridge/
+│  ├─ SkillBridgePage.jsx        # shared shell + top nav + profile menu
+│  ├─ views/
+│  │  ├─ GeneralDashboard.jsx     # public dashboard
+│  │  ├─ UserProfile.jsx          # applicant account (Skills/Portfolio/Matches/Assessments)
+│  │  └─ EmployerDashboard.jsx    # employer workspace
+│  ├─ utils/matching.js           # ⭐ the matching engine
+│  ├─ components/Icons.jsx        # line icons
+│  └─ data/mockData.js            # sample data (see Project status)
+└─ JobSeeker/                      # auth flow (login / signup / onboarding)
+```
+
+---
+
+## Getting started
+
+```bash
+# 1. Install dependencies
+composer install
+npm install
+
+# 2. Configure environment
+cp .env.example .env
+php artisan key:generate
+
+# 3. Set up the database (SQLite by default)
+touch database/database.sqlite
+php artisan migrate
+
+# 4. Run the app (Laravel + Vite)
+php artisan serve      # http://localhost:8000
+npm run dev            # Vite dev server (separate terminal)
+```
+
+Build for production with `npm run build`.
+
+---
+
+## Deployment
+
+A [`Dockerfile`](Dockerfile) and `docker/` config are included for container deployment
+(e.g. Render). Build the image and run migrations as part of the release step.
+
+---
+
+## Project status
+
+The product design and the **matching engine** are implemented, along with the full
+UI for the public dashboard, applicant account, employer workspace, and auth flow.
+
+**In progress toward a fully autonomous, multi-user system:**
+
+- [ ] Persist jobs, profiles, and matches in the Laravel database (replacing in-browser sample data)
+- [ ] Real cross-account matching (employer posts → applicant accounts flagged automatically)
+- [ ] Applicant credential file uploads (resume/CV, certificates) with storage
+- [ ] Remove remaining hardcoded sample data in favor of real records
+
+See [`SYSTEM_DEMO.md`](SYSTEM_DEMO.md) for a walkthrough of the current demo.
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Released under the [MIT license](https://opensource.org/licenses/MIT).

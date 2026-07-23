@@ -20,9 +20,28 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'role',
+        'first_name',
+        'middle_name',
+        'surname',
         'email',
         'password',
     ];
+
+    public function applicantProfile()
+    {
+        return $this->hasOne(ApplicantProfile::class);
+    }
+
+    public function employerProfile()
+    {
+        return $this->hasOne(EmployerProfile::class);
+    }
+
+    public function isEmployer(): bool
+    {
+        return $this->role === 'employer';
+    }
 
     /**
      * The attributes that should be hidden for serialization.
