@@ -14,9 +14,13 @@ class CredentialController extends Controller
         abort_unless($user->role === 'jobseeker', 403);
 
         $request->validate([
-            'type' => ['required', 'in:resume,certificate,portfolio'],
+            'type' => ['required', 'in:resume,certificate,portfolio,video'],
             'title' => ['nullable', 'string', 'max:255'],
-            'file' => ['required', 'file', 'max:5120', 'mimes:pdf,doc,docx,png,jpg,jpeg'],
+            // Documents/images up to 10MB; hands-on demo videos up to 60MB.
+            'file' => [
+                'required', 'file', 'max:61440',
+                'mimes:pdf,doc,docx,png,jpg,jpeg,mp4,mov,webm,avi,m4v',
+            ],
         ]);
 
         $profile = $user->applicantProfile()->firstOrCreate(

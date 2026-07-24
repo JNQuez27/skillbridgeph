@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ApplicantProfile;
 use App\Models\CompanyAssessment;
+use App\Models\EmployerProfile;
 use App\Models\JobPost;
 use App\Services\MatchService;
 use Illuminate\Http\Request;
@@ -44,10 +45,11 @@ class DashboardController extends Controller
 
         $profile->load(['skills', 'credentials', 'applications']);
         $applications = $profile->applications->keyBy('job_post_id');
+        $verifiedNames = collect($profile->verifiedSkillNames())->map(fn ($n) => mb_strtolower($n));
 
-        $matches = $matcher->matchesForApplicant($profile)->map(function ($entry) use ($applications) {
-            $job = $entry['job'];
-            $match = $entry['match'];
+        // Score every open job once (used for both matches and manual browse).
+        $scored = JobPost::with('employerProfile')->where('status', 'Open')->get()->map(function (JobPost $job) use ($matcher, $profile, $applications) {
+            $match = $matcher->score($job, $profile);
             $application = $applications->get($job->id);
 
             return [
@@ -67,10 +69,33 @@ class DashboardController extends Controller
                 'locationMatch' => $match['locationMatch'],
                 'experienceMatch' => $match['experienceMatch'],
                 'score' => $match['score'],
-                'status' => $application?->status ?? 'flagged',
+                'status' => $application?->status,
                 'postedAt' => optional($job->created_at)->diffForHumans() ?? 'Recently',
             ];
-        })->values();
+        });
+
+        // Matches = autonomously flagged (score >= 60) OR jobs the applicant already acted on / was invited to.
+        $matches = $scored
+            ->filter(fn ($j) => $j['score'] >= MatchService::APPLICANT_THRESHOLD || $j['status'])
+            ->map(fn ($j) => array_merge($j, ['status' => $j['status'] ?? 'flagged']))
+            ->sortByDesc('score')
+            ->values();
+
+        // Browse = every open job (manual search).
+        $browse = $scored->sortByDesc('score')->values();
+
+        $companies = EmployerProfile::withCount(['jobPosts' => fn ($q) => $q->where('status', 'Open')])
+            ->get()
+            ->map(fn (EmployerProfile $e) => [
+                'id' => $e->id,
+                'name' => $e->company_name,
+                'industry' => $e->industry,
+                'size' => $e->company_size,
+                'location' => trim(($e->location_city ?? '').($e->location_region ? ', '.$e->location_region : '')),
+                'openRoles' => $e->job_posts_count,
+                'recruiter' => $e->recruiter_name,
+                'verified' => (bool) $e->email_verified,
+            ])->values();
 
         $assessments = CompanyAssessment::with('employerProfile')
             ->where('status', 'Active')
@@ -78,17 +103,23 @@ class DashboardController extends Controller
             ->groupBy(fn ($a) => $a->employerProfile->company_name ?? 'Company')
             ->map(fn ($group, $company) => [
                 'company' => $company,
+                'industry' => $group->first()->industry,
                 'location' => $group->first()->employerProfile->location_city ?? '',
                 'assessments' => $group->map(fn ($a) => [
-                    'id' => 'assessment-'.$a->id,
+                    'id' => $a->id,
                     'title' => $a->title,
-                    'status' => 'Invited',
-                    'score' => null,
-                    'date' => null,
+                    'role' => $a->role,
+                    'industry' => $a->industry,
+                    'skill' => $a->skill,
                     'questionCount' => $a->question_count,
                     'durationMinutes' => $a->duration_minutes,
                     'passingScore' => $a->passing_score,
-                    'summary' => $a->instructions ?: 'Company assessment for '.$a->role.'.',
+                    'verified' => $a->skill ? $verifiedNames->contains(mb_strtolower($a->skill)) : false,
+                    // Answers are intentionally excluded from the payload.
+                    'questions' => collect($a->questions ?? [])->map(fn ($q) => [
+                        'prompt' => $q['prompt'],
+                        'options' => $q['options'],
+                    ])->values(),
                 ])->values(),
             ])->values();
 
@@ -124,9 +155,12 @@ class DashboardController extends Controller
                 'title' => $c->title ?: $c->original_name,
                 'originalName' => $c->original_name,
                 'url' => $c->url,
+                'mime' => $c->mime,
                 'size' => $c->size,
             ])->values(),
             'matches' => $matches,
+            'browse' => $browse,
+            'companies' => $companies,
             'assessments' => $assessments,
         ];
     }

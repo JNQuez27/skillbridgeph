@@ -10,11 +10,18 @@ class CompanyAssessment extends Model
         'employer_profile_id',
         'title',
         'role',
+        'industry',
+        'skill',
         'question_count',
         'duration_minutes',
         'passing_score',
         'instructions',
+        'questions',
         'status',
+    ];
+
+    protected $casts = [
+        'questions' => 'array',
     ];
 
     public function employerProfile()

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\ApplicantProfileController;
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\AssessmentAttemptController;
 use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\InviteController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CredentialController;
@@ -40,9 +42,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/credentials', [CredentialController::class, 'store']);
     Route::delete('/credentials/{credential}', [CredentialController::class, 'destroy']);
     Route::post('/applications/{jobPost}', [ApplicationController::class, 'store']);
+    Route::post('/assessments/{assessment}/attempt', [AssessmentAttemptController::class, 'store']);
 
     // Employer actions
     Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
     Route::post('/job-posts', [JobPostController::class, 'store']);
     Route::post('/assessments', [AssessmentController::class, 'store']);
+    Route::post('/job-posts/{jobPost}/invite/{applicant}', [InviteController::class, 'store']);
 });

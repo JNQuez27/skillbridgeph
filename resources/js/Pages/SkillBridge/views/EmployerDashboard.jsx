@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useForm } from "@inertiajs/react";
+import { router, useForm } from "@inertiajs/react";
 import { IconCheck, IconPlus } from "../components/Icons";
 
 // Local blue + green brand palette.
@@ -77,6 +77,11 @@ export default function EmployerView({ account }) {
   const assessments = account?.assessments || [];
   const matches = account?.matches || [];
   const topCandidates = account?.topCandidates || [];
+
+  const invite = (jobId, applicantId) => {
+    if (!jobId || !applicantId) return;
+    router.post(`/job-posts/${jobId}/invite/${applicantId}`, {}, { preserveScroll: true });
+  };
 
   const [tab, setTab] = useState("job-offers");
   const [jobOpen, setJobOpen] = useState(false);
@@ -267,7 +272,7 @@ export default function EmployerView({ account }) {
                           <div style={{ fontFamily: FONT_DISPLAY, fontSize: 18, fontWeight: 600, color: c.score >= 85 ? COLORS.success : COLORS.info }}>{c.score}%</div>
                           <div style={{ fontSize: 10, color: COLORS.textLight }}>match</div>
                         </div>
-                        <button style={{ ...primaryBtn, padding: "6px 12px" }}>Invite</button>
+                        <button style={{ ...primaryBtn, padding: "6px 12px" }} onClick={() => invite(job.id, c.id)}>Invite</button>
                       </div>
                     </div>
                   ))}
@@ -381,7 +386,7 @@ export default function EmployerView({ account }) {
                     <div style={{ fontFamily: FONT_DISPLAY, fontSize: 18, fontWeight: 600, color: c.score >= 90 ? COLORS.success : COLORS.info }}>{c.score}%</div>
                     <div style={{ fontSize: 10, color: COLORS.textLight }}>skill score</div>
                   </div>
-                  <button style={{ ...primaryBtn, padding: "6px 12px" }}>Invite</button>
+                  <button style={{ ...primaryBtn, padding: "6px 12px", opacity: jobPosts[0] ? 1 : 0.6 }} onClick={() => invite(jobPosts[0]?.id, c.id)} disabled={!jobPosts[0]}>Invite</button>
                 </div>
               </div>
             ))}

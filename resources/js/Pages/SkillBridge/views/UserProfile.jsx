@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { router, useForm } from "@inertiajs/react";
 import SkillBar from "../components/SkillBar";
 import {
@@ -8,12 +8,10 @@ import {
   IconBriefcase,
   IconPlus,
   IconMapPin,
-  IconZap,
-  IconTarget,
-  IconClipboardCheck,
+  IconVideo,
+  IconBuilding,
 } from "../components/Icons";
 
-// Local blue + green brand palette.
 const COLORS = {
   parchment: "#F0F9FF",
   parchmentDark: "#E0F2FE",
@@ -34,10 +32,13 @@ const FONT_DISPLAY = "'Lexend', sans-serif";
 const FONT_BODY = "'Source Sans 3', sans-serif";
 
 const sectionMeta = {
-  skills: { label: "Skills & Badges", sub: "Your verified proof of skill.", Icon: IconZap },
-  portfolio: { label: "Credentials & Portfolio", sub: "Upload your resume, certificates, and work.", Icon: IconBriefcase },
-  matches: { label: "Job Matches", sub: "Jobs matched to you — pick the ones that fit.", Icon: IconTarget },
-  assessments: { label: "Assessments", sub: "Company assessments and results.", Icon: IconClipboardCheck },
+  skills: { label: "Skills & Badges", sub: "Your verified proof of skill." },
+  portfolio: { label: "Credentials & Portfolio", sub: "Upload CVs, certificates, portfolios, and hands-on demo videos." },
+  matches: { label: "Job Matches", sub: "Jobs matched to you — pick the ones that fit." },
+  assessments: { label: "Assessments", sub: "Take a company assessment to verify a skill badge." },
+  browse: { label: "Find Jobs", sub: "Search every open role and view your match." },
+  companies: { label: "Companies", sub: "Browse the employers hiring on SkillBridge PH." },
+  settings: { label: "Profile Settings", sub: "Tell us what work you want so matching stays accurate." },
 };
 
 const badgeActionLabel = (method) => {
@@ -52,33 +53,66 @@ const formatBytes = (bytes) => {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.round(kb)} KB`;
 };
 
+const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
+const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
+const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
+const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
+const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
+
 export default function ProfileView({ account, activeTab = "skills" }) {
   const tab = sectionMeta[activeTab] ? activeTab : "skills";
   const profile = account?.profile || {};
   const skills = account?.skills || [];
   const credentials = account?.credentials || [];
   const matches = account?.matches || [];
+  const browse = account?.browse || [];
+  const companies = account?.companies || [];
   const assessments = account?.assessments || [];
-
-  const SectionIcon = sectionMeta[tab].Icon;
-  const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
-  const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
-  const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
 
   const verifiedSkills = skills.filter((s) => s.verificationStatus === "verified");
   const pendingSkills = skills.filter((s) => s.verificationStatus !== "verified");
 
+  const [search, setSearch] = useState("");
+  const filteredBrowse = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return browse;
+    return browse.filter((j) => `${j.title} ${j.company} ${(j.requiredSkills || []).join(" ")}`.toLowerCase().includes(q));
+  }, [search, browse]);
+
   const upload = useForm({ type: "resume", title: "", file: null });
   const submitCredential = (event) => {
     event.preventDefault();
-    upload.post("/credentials", {
-      forceFormData: true,
-      preserveScroll: true,
-      onSuccess: () => upload.reset("title", "file"),
-    });
+    upload.post("/credentials", { forceFormData: true, preserveScroll: true, onSuccess: () => upload.reset("title", "file") });
   };
   const deleteCredential = (id) => router.delete(`/credentials/${id}`, { preserveScroll: true });
   const pickJob = (jobId, status) => router.post(`/applications/${jobId}`, { status }, { preserveScroll: true });
+
+  const settings = useForm({
+    headline: profile.headline || "",
+    location: profile.location || "",
+    experienceLevel: profile.experienceLevel || "Entry",
+    desiredRoles: (profile.desiredRoles || []).join(", "),
+  });
+  const submitSettings = (event) => {
+    event.preventDefault();
+    settings.transform((data) => ({
+      ...data,
+      desiredRoles: data.desiredRoles.split(",").map((r) => r.trim()).filter(Boolean),
+    })).put("/applicant-profile", { preserveScroll: true });
+  };
+
+  // Take-assessment (badge verification) flow.
+  const [activeAssessment, setActiveAssessment] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const startAssessment = (a) => { setActiveAssessment(a); setAnswers({}); };
+  const submitAssessment = () => {
+    router.post(`/assessments/${activeAssessment.id}/attempt`, { answers }, {
+      preserveScroll: true,
+      onSuccess: () => setActiveAssessment(null),
+    });
+  };
+
+  const statusColor = (status) => status === "applied" ? "#15803D" : status === "invited" ? "#7C3AED" : status === "saved" ? "#0369A1" : "#B45309";
 
   return (
     <div style={{ padding: "28px 32px", fontFamily: FONT_BODY, background: COLORS.parchment, minHeight: "calc(100vh - 64px)" }}>
@@ -97,9 +131,7 @@ export default function ProfileView({ account, activeTab = "skills" }) {
           border: "3px solid rgba(255,255,255,0.25)",
         }}>{profile.initials || "U"}</div>
         <div style={{ flex: 1, minWidth: 220 }}>
-          <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, color: "#fff", marginBottom: 4 }}>
-            {profile.name}
-          </h2>
+          <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, color: "#fff", marginBottom: 4 }}>{profile.name}</h2>
           <p style={{ color: "rgba(224,242,254,0.85)", fontSize: 13, marginBottom: 12 }}>{profile.headline}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {profile.stats?.badges > 0 && (
@@ -129,21 +161,10 @@ export default function ProfileView({ account, activeTab = "skills" }) {
         </div>
       </div>
 
-      {/* Section heading */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-        <span style={{
-          width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-          background: COLORS.parchmentDark, color: COLORS.brownLight,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <SectionIcon size={20} />
-        </span>
-        <div>
-          <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: 20, fontWeight: 600, color: COLORS.brownDeep }}>
-            {sectionMeta[tab].label}
-          </h3>
-          <p style={{ fontSize: 12, color: COLORS.textLight }}>{sectionMeta[tab].sub}</p>
-        </div>
+      {/* Section heading (no icon) */}
+      <div style={{ marginBottom: 20 }}>
+        <h3 style={{ fontFamily: FONT_DISPLAY, fontSize: 20, fontWeight: 600, color: COLORS.brownDeep }}>{sectionMeta[tab].label}</h3>
+        <p style={{ fontSize: 12, color: COLORS.textLight }}>{sectionMeta[tab].sub}</p>
       </div>
 
       {tab === "skills" && (
@@ -158,33 +179,23 @@ export default function ProfileView({ account, activeTab = "skills" }) {
               <h4 style={headingStyle}>Earned Badges</h4>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {verifiedSkills.filter((s) => s.badge).map((s) => (
-                  <div key={s.name} style={{
-                    background: `linear-gradient(135deg, ${COLORS.brownMid}, ${COLORS.info})`,
-                    borderRadius: 14, padding: "16px 16px", textAlign: "center", minWidth: 104,
-                    border: "1px solid rgba(255,255,255,0.14)", color: "#fff",
-                  }}>
-                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, color: COLORS.goldLight }}>
-                      <IconAward size={24} />
-                    </div>
+                  <div key={s.name} style={{ background: `linear-gradient(135deg, ${COLORS.brownMid}, ${COLORS.info})`, borderRadius: 14, padding: "16px", textAlign: "center", minWidth: 104, border: "1px solid rgba(255,255,255,0.14)", color: "#fff" }}>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 8, color: COLORS.goldLight }}><IconAward size={24} /></div>
                     <div style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>{s.badge}</div>
                     <div style={{ fontSize: 10, color: "rgba(224,242,254,0.75)", marginTop: 2 }}>{s.name.split("/")[0].trim()}</div>
                   </div>
                 ))}
-                {verifiedSkills.filter((s) => s.badge).length === 0 && (
-                  <p style={{ fontSize: 12, color: COLORS.textLight }}>No earned badges yet.</p>
-                )}
+                {verifiedSkills.filter((s) => s.badge).length === 0 && <p style={{ fontSize: 12, color: COLORS.textLight }}>No earned badges yet.</p>}
               </div>
             </div>
             <div style={cardStyle}>
               <h4 style={headingStyle}>Badge Pathways</h4>
-              <p style={{ fontSize: 12, color: COLORS.textLight, marginTop: 0, marginBottom: 12 }}>
-                Complete the assessment, scenario, or portfolio check to convert these into verified badges.
-              </p>
+              <p style={{ fontSize: 12, color: COLORS.textLight, marginTop: 0, marginBottom: 12 }}>Verify these by taking a company assessment in the Assessments section.</p>
               {pendingSkills.length === 0 && <p style={{ fontSize: 12, color: COLORS.textLight }}>All your skills are verified.</p>}
               {pendingSkills.map((s) => (
                 <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "10px 14px", background: COLORS.parchment, borderRadius: 10 }}>
                   <span style={{ fontSize: 13, color: COLORS.textDark }}>{s.name}</span>
-                  <button style={{ ...primaryBtn, padding: "6px 14px", fontSize: 11 }}>{badgeActionLabel(s.verificationMethod)}</button>
+                  <span style={{ fontSize: 11, color: COLORS.textLight }}>{badgeActionLabel(s.verificationMethod)}</span>
                 </div>
               ))}
             </div>
@@ -196,36 +207,26 @@ export default function ProfileView({ account, activeTab = "skills" }) {
         <div style={{ display: "grid", gap: 20 }}>
           <form onSubmit={submitCredential} style={{ ...cardStyle, display: "grid", gap: 14 }}>
             <h4 style={{ ...headingStyle, marginBottom: 0 }}>Upload a credential</h4>
+            <p style={{ fontSize: 12, color: COLORS.textLight, margin: 0 }}>
+              IT roles: portfolio or CV. Barista / hiring-chief roles: a hands-on demo video. Certificates and resumes welcome too.
+            </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
               <label style={{ display: "grid", gap: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Type</span>
-                <select
-                  value={upload.data.type}
-                  onChange={(e) => upload.setData("type", e.target.value)}
-                  style={{ padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY }}
-                >
+                <select value={upload.data.type} onChange={(e) => upload.setData("type", e.target.value)} style={inputStyle}>
                   <option value="resume">Resume / CV</option>
                   <option value="certificate">Certificate</option>
                   <option value="portfolio">Portfolio</option>
+                  <option value="video">Hands-on demo video</option>
                 </select>
               </label>
               <label style={{ display: "grid", gap: 6 }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Title (optional)</span>
-                <input
-                  type="text"
-                  value={upload.data.title}
-                  placeholder="e.g. 2026 Resume"
-                  onChange={(e) => upload.setData("title", e.target.value)}
-                  style={{ padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY }}
-                />
+                <input type="text" value={upload.data.title} placeholder="e.g. Barista latte-art demo" onChange={(e) => upload.setData("title", e.target.value)} style={inputStyle} />
               </label>
               <label style={{ display: "grid", gap: 6 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>File (PDF/DOC/image, max 5MB)</span>
-                <input
-                  type="file"
-                  onChange={(e) => upload.setData("file", e.target.files[0])}
-                  style={{ padding: "8px 10px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 12, color: COLORS.textDark, fontFamily: FONT_BODY }}
-                />
+                <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>File (PDF/DOC/image up to 10MB, video up to 60MB)</span>
+                <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.mp4,.mov,.webm,.avi,.m4v" onChange={(e) => upload.setData("file", e.target.files[0])} style={{ ...inputStyle, padding: "8px 10px", fontSize: 12 }} />
               </label>
             </div>
             {upload.errors.file && <span style={{ fontSize: 12, color: "#DC2626" }}>{upload.errors.file}</span>}
@@ -237,23 +238,33 @@ export default function ProfileView({ account, activeTab = "skills" }) {
           </form>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
-            {credentials.length === 0 && (
-              <p style={{ fontSize: 13, color: COLORS.textLight }}>No credentials uploaded yet.</p>
-            )}
-            {credentials.map((c) => (
-              <div key={c.id} style={{ ...cardStyle, display: "grid", gap: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: COLORS.brownLight }}>
-                  <IconBriefcase size={18} />
-                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.textLight }}>{c.type}</span>
+            {credentials.length === 0 && <p style={{ fontSize: 13, color: COLORS.textLight }}>No credentials uploaded yet.</p>}
+            {credentials.map((c) => {
+              const isVideo = c.type === "video" || (c.mime || "").startsWith("video");
+              return (
+                <div key={c.id} style={{ ...cardStyle, display: "grid", gap: 8, padding: 0, overflow: "hidden" }}>
+                  {isVideo ? (
+                    <video src={c.url} controls style={{ width: "100%", height: 150, background: "#000", objectFit: "cover" }} />
+                  ) : (
+                    <div style={{ height: 90, background: `linear-gradient(135deg, ${COLORS.brownMid}, ${COLORS.info})`, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.9)" }}>
+                      <IconBriefcase size={30} />
+                    </div>
+                  )}
+                  <div style={{ padding: "0 16px 16px", display: "grid", gap: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: COLORS.brownLight }}>
+                      {isVideo ? <IconVideo size={15} /> : <IconBriefcase size={14} />}
+                      <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.textLight }}>{c.type}</span>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.brownDeep, wordBreak: "break-word" }}>{c.title}</div>
+                    <div style={{ fontSize: 12, color: COLORS.textLight }}>{c.originalName} · {formatBytes(c.size)}</div>
+                    <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                      <a href={c.url} target="_blank" rel="noreferrer" style={{ ...primaryBtn, textDecoration: "none", padding: "6px 12px" }}>View</a>
+                      <button onClick={() => deleteCredential(c.id)} style={{ ...ghostBtn, color: "#B91C1C", padding: "6px 12px" }}>Remove</button>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.brownDeep, wordBreak: "break-word" }}>{c.title}</div>
-                <div style={{ fontSize: 12, color: COLORS.textLight }}>{c.originalName} · {formatBytes(c.size)}</div>
-                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                  <a href={c.url} target="_blank" rel="noreferrer" style={{ ...primaryBtn, textDecoration: "none", padding: "6px 12px" }}>View</a>
-                  <button onClick={() => deleteCredential(c.id)} style={{ padding: "6px 12px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: "#B91C1C", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Remove</button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -261,80 +272,165 @@ export default function ProfileView({ account, activeTab = "skills" }) {
       {tab === "matches" && (
         <div style={{ display: "grid", gap: 12 }}>
           {matches.length === 0 ? (
-            <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>
-              No matched jobs yet. Add verified skills and credentials to unlock recommendations.
-            </div>
-          ) : (
-            matches.map((job) => {
-              const statusColor = job.status === "applied" ? "#15803D" : job.status === "saved" ? "#0369A1" : "#B45309";
-              return (
-                <div key={job.id} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.brownDeep }}>{job.title}</div>
-                    <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 3 }}>{job.company} · {job.location}</div>
-                    <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                      {job.requiredSkills.slice(0, 4).map((skill) => (
-                        <span key={skill} style={{ padding: "4px 10px", borderRadius: 999, background: COLORS.parchment, fontSize: 11, color: COLORS.textMid, border: `1px solid ${COLORS.parchmentDeep}` }}>{skill}</span>
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 11, color: COLORS.textLight, marginTop: 6 }}>
-                      Required {job.matchedRequired}/{job.requiredCount} · Preferred {job.matchedPreferred}/{job.preferredCount} · Location {job.locationMatch ? "Yes" : "No"} · Experience {job.experienceMatch ? "Yes" : "No"}
-                    </div>
-                    <span style={{ display: "inline-block", marginTop: 8, fontSize: 11, fontWeight: 700, textTransform: "capitalize", color: statusColor }}>{job.status}</span>
+            <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>No matched jobs yet. Add verified skills and credentials to unlock recommendations.</div>
+          ) : matches.map((job) => (
+            <JobRow key={job.id} job={job} onApply={() => pickJob(job.id, "applied")} onSave={() => pickJob(job.id, "saved")} statusColor={statusColor} />
+          ))}
+        </div>
+      )}
+
+      {tab === "browse" && (
+        <div style={{ display: "grid", gap: 12 }}>
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search jobs by title, company, or skill…" style={{ ...inputStyle, maxWidth: 420 }} />
+          {filteredBrowse.length === 0 ? (
+            <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>No jobs found.</div>
+          ) : filteredBrowse.map((job) => (
+            <JobRow key={job.id} job={{ ...job, status: job.status || "open" }} onApply={() => pickJob(job.id, "applied")} onSave={() => pickJob(job.id, "saved")} statusColor={statusColor} hideStatusIfOpen />
+          ))}
+        </div>
+      )}
+
+      {tab === "companies" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+          {companies.length === 0 && <p style={{ fontSize: 13, color: COLORS.textLight }}>No companies yet.</p>}
+          {companies.map((c) => (
+            <div key={c.id} style={{ ...cardStyle, display: "grid", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ width: 40, height: 40, borderRadius: 10, background: COLORS.parchmentDark, color: COLORS.brownLight, display: "flex", alignItems: "center", justifyContent: "center" }}><IconBuilding size={20} /></span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.brownDeep, display: "flex", alignItems: "center", gap: 6 }}>
+                    {c.name} {c.verified && <IconCheck size={13} color={COLORS.success} />}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 600, color: job.score >= 85 ? COLORS.success : COLORS.info }}>{job.score}%</div>
-                      <div style={{ fontSize: 10, color: COLORS.textLight }}>match</div>
-                    </div>
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <button onClick={() => pickJob(job.id, "applied")} disabled={job.status === "applied"} style={{ ...primaryBtn, opacity: job.status === "applied" ? 0.6 : 1 }}>
-                        {job.status === "applied" ? "Applied" : "Apply"}
-                      </button>
-                      <button onClick={() => pickJob(job.id, "saved")} style={{ padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Save</button>
-                    </div>
-                  </div>
+                  <div style={{ fontSize: 12, color: COLORS.textLight }}>{c.industry}</div>
                 </div>
-              );
-            })
-          )}
+              </div>
+              <div style={{ fontSize: 12, color: COLORS.textMid }}>{c.location}{c.size ? ` · ${c.size} employees` : ""}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.info }}>{c.openRoles} open role(s)</div>
+            </div>
+          ))}
         </div>
       )}
 
       {tab === "assessments" && (
         <div style={{ display: "grid", gap: 16 }}>
-          {assessments.length === 0 && (
-            <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>No assessments available yet.</div>
-          )}
+          {assessments.length === 0 && <div style={{ ...cardStyle, borderStyle: "dashed", fontSize: 13, color: COLORS.textMid }}>No assessments available yet.</div>}
           {assessments.map((company) => (
             <div key={company.company} style={{ ...cardStyle, display: "grid", gap: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.brownDeep }}>{company.company}</div>
-                  <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 4 }}>{company.location}</div>
+                  <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 4 }}>{company.industry} · {company.location}</div>
                 </div>
-                <span style={{ fontSize: 12, color: COLORS.textMid }}>{company.assessments.length} assessment(s)</span>
               </div>
               <div style={{ display: "grid", gap: 10 }}>
-                {company.assessments.map((assessment) => (
-                  <details key={assessment.id} style={{ borderRadius: 12, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.parchment, padding: "12px 14px" }}>
-                    <summary style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontSize: 13, fontWeight: 600, color: COLORS.brownDeep, cursor: "pointer", listStyle: "none" }}>
-                      <span>{company.company} - {assessment.title}</span>
-                      <span style={{ fontSize: 12, color: COLORS.textMid }}>{assessment.score ? `${assessment.score}%` : assessment.status}</span>
-                    </summary>
-                    <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                      <div style={{ fontSize: 12, color: COLORS.textLight }}>{assessment.summary}</div>
-                      <div style={{ fontSize: 12, color: COLORS.textMid }}>
-                        {assessment.questionCount} questions · {assessment.durationMinutes} min · Passing {assessment.passingScore}%
-                      </div>
+                {company.assessments.map((a) => (
+                  <div key={a.id} style={{ borderRadius: 12, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.parchment, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.brownDeep }}>{a.title}</div>
+                      <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 2 }}>{a.questionCount} questions · {a.durationMinutes} min · Pass {a.passingScore}% · Verifies <strong>{a.skill}</strong></div>
                     </div>
-                  </details>
+                    {a.verified ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: COLORS.success, fontSize: 12, fontWeight: 700 }}><IconCheck size={14} /> Verified</span>
+                    ) : (
+                      <button onClick={() => startAssessment(a)} style={primaryBtn}>Take assessment</button>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {tab === "settings" && (
+        <form onSubmit={submitSettings} style={{ ...cardStyle, maxWidth: 560, display: "grid", gap: 14 }}>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Headline</span>
+            <input type="text" value={settings.data.headline} onChange={(e) => settings.setData("headline", e.target.value)} placeholder="e.g. WordPress & Webflow Developer" style={inputStyle} />
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Location</span>
+            <input type="text" value={settings.data.location} onChange={(e) => settings.setData("location", e.target.value)} style={inputStyle} />
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Experience level</span>
+            <select value={settings.data.experienceLevel} onChange={(e) => settings.setData("experienceLevel", e.target.value)} style={inputStyle}>
+              <option>Entry</option><option>Mid</option><option>Senior</option>
+            </select>
+          </label>
+          <label style={{ display: "grid", gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>Desired roles (comma-separated) — the jobs you want</span>
+            <input type="text" value={settings.data.desiredRoles} onChange={(e) => settings.setData("desiredRoles", e.target.value)} placeholder="Frontend Developer, WordPress Developer" style={inputStyle} />
+          </label>
+          <div>
+            <button type="submit" disabled={settings.processing} style={{ ...primaryBtn, opacity: settings.processing ? 0.6 : 1 }}>Save profile</button>
+          </div>
+        </form>
+      )}
+
+      {/* Take-assessment modal */}
+      {activeAssessment && (
+        <div role="dialog" aria-modal="true" onClick={() => setActiveAssessment(null)} style={{ position: "fixed", inset: 0, background: "rgba(12,74,110,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 60 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.cream, borderRadius: 16, padding: "22px 24px", width: "min(620px, 100%)", maxHeight: "86vh", overflowY: "auto", border: `1px solid ${COLORS.parchmentDeep}`, boxShadow: "0 22px 60px rgba(12,74,110,0.28)", display: "grid", gap: 14 }}>
+            <div>
+              <div style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: COLORS.brownLight, fontWeight: 700 }}>Assessment · verifies {activeAssessment.skill}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.brownDeep, marginTop: 4, fontFamily: FONT_DISPLAY }}>{activeAssessment.title}</div>
+              <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 2 }}>Pass {activeAssessment.passingScore}% to earn the badge.</div>
+            </div>
+            {(activeAssessment.questions || []).map((q, qi) => (
+              <div key={qi} style={{ display: "grid", gap: 6 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.brownDeep }}>{qi + 1}. {q.prompt}</div>
+                <div style={{ display: "grid", gap: 4 }}>
+                  {q.options.map((opt, oi) => (
+                    <label key={oi} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: COLORS.textDark, cursor: "pointer", padding: "6px 8px", borderRadius: 8, background: answers[qi] === oi ? COLORS.parchmentDark : "transparent" }}>
+                      <input type="radio" name={`q${qi}`} checked={answers[qi] === oi} onChange={() => setAnswers((prev) => ({ ...prev, [qi]: oi }))} />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
+              <button type="button" style={ghostBtn} onClick={() => setActiveAssessment(null)}>Cancel</button>
+              <button type="button" style={primaryBtn} onClick={submitAssessment} disabled={Object.keys(answers).length < (activeAssessment.questions || []).length}>Submit answers</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function JobRow({ job, onApply, onSave, statusColor, hideStatusIfOpen }) {
+  return (
+    <div style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.brownDeep }}>{job.title}</div>
+        <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 3 }}>{job.company} · {job.location}{job.salaryRange ? ` · ${job.salaryRange}` : ""}</div>
+        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+          {(job.requiredSkills || []).slice(0, 4).map((skill) => (
+            <span key={skill} style={{ padding: "4px 10px", borderRadius: 999, background: COLORS.parchment, fontSize: 11, color: COLORS.textMid, border: `1px solid ${COLORS.parchmentDeep}` }}>{skill}</span>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: COLORS.textLight, marginTop: 6 }}>
+          Required {job.matchedRequired}/{job.requiredCount} · Preferred {job.matchedPreferred}/{job.preferredCount} · Location {job.locationMatch ? "Yes" : "No"} · Experience {job.experienceMatch ? "Yes" : "No"}
+        </div>
+        {!(hideStatusIfOpen && job.status === "open") && (
+          <span style={{ display: "inline-block", marginTop: 8, fontSize: 11, fontWeight: 700, textTransform: "capitalize", color: statusColor(job.status) }}>
+            {job.status === "invited" ? "Invited by employer" : job.status}
+          </span>
+        )}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, fontWeight: 600, color: job.score >= 85 ? COLORS.success : COLORS.info }}>{job.score}%</div>
+          <div style={{ fontSize: 10, color: COLORS.textLight }}>match</div>
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <button onClick={onApply} disabled={job.status === "applied"} style={{ ...primaryBtn, opacity: job.status === "applied" ? 0.6 : 1 }}>{job.status === "applied" ? "Applied" : "Apply"}</button>
+          <button onClick={onSave} style={ghostBtn}>Save</button>
+        </div>
+      </div>
     </div>
   );
 }

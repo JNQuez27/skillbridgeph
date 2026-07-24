@@ -10,6 +10,8 @@ import {
   IconBriefcase,
   IconTarget,
   IconClipboardCheck,
+  IconSearch,
+  IconBuilding,
   IconSettings,
   IconLogout,
 } from "./components/Icons";
@@ -39,6 +41,8 @@ export default function SkillBridgePage() {
     { key: "portfolio", label: "Portfolio", Icon: IconBriefcase },
     { key: "matches", label: "Matches", Icon: IconTarget },
     { key: "assessments", label: "Assessment", Icon: IconClipboardCheck },
+    { key: "browse", label: "Find Jobs", Icon: IconSearch },
+    { key: "companies", label: "Companies", Icon: IconBuilding },
   ];
 
   const scrollToSection = (event, target) => {
@@ -206,7 +210,12 @@ export default function SkillBridgePage() {
                     </>
                   )}
                   <div style={{ height: 1, background: COLORS.parchmentDeep, margin: "6px 6px" }} />
-                  <button type="button" role="menuitem" className="sbph-menu-item" onClick={() => router.visit("/dashboard")}>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={`sbph-menu-item${account && account.role !== "employer" && accountTab === "settings" ? " active" : ""}`}
+                    onClick={() => { role === "employer" ? router.visit("/dashboard") : openAccountSection("settings"); }}
+                  >
                     <IconSettings size={16} />
                     Settings
                   </button>
