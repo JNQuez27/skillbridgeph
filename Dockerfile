@@ -1,61 +1,51 @@
-# Stage 1: Asset Builder
-FROM node:20-alpine as builder
+# ---- Stage 1: build front-end assets ----
+FROM node:20-alpine AS assets
 
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build
 
-# Stage 2: PHP Backend
+# ---- Stage 2: PHP application (Nginx + PHP-FPM under supervisor) ----
 FROM php:8.2-fpm-alpine
 
 WORKDIR /var/www
 
-# Install system dependencies for Laravel
-RUN apk --no-cache add \
-    nginx \
-    supervisor \
-    curl \
-    libzip-dev \
-    zip \
-    sqlite \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite zip
+# Extensions the app needs. pdo_sqlite and mbstring ship with the base image.
+#   pdo_pgsql - PostgreSQL (libpq-dev: client headers only; postgresql-dev
+#               would pull in the full LLVM toolchain the app never uses)
+#   zip       - reading DOCX credentials (CredentialAnalyzer)
+#   opcache   - compile the app once instead of on every request (WPR 09, F-03)
+RUN apk add --no-cache nginx supervisor libzip-dev libpq-dev \
+    && docker-php-ext-install pdo_pgsql zip opcache
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application code
 COPY --chown=www-data:www-data . .
 
-# Copy .env file
-COPY --chown=www-data:www-data .env /var/www/.env
+RUN composer install --no-interaction --no-dev --optimize-autoloader --no-progress
 
-# Install PHP dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# Laravel's writable directories. .dockerignore keeps the developer's local
+# copies out of the image, so they must be created here or the first request
+# fails on sessions, cache, compiled views and logs.
+RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views \
+             storage/logs storage/app/private storage/app/public bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache \
+    && chown -R www-data:www-data /var/lib/nginx
+# ^ nginx workers run as www-data (nginx.conf), but Alpine creates nginx's temp
+#   directory for user "nginx" with mode 700. Request bodies over the in-memory
+#   buffer (~16 KB) are spooled there, so without this every file upload fails.
 
-# Generate app key (now works because .env exists)
-RUN php artisan key:generate --force
-
-# Create SQLite database file
-RUN mkdir -p /var/www/database && \
-    touch /var/www/database/database.sqlite && \
-    chown -R www-data:www-data /var/www/database
-
-# Run migrations
-RUN php artisan migrate --force --no-interaction
-
-# Set correct permissions for storage and bootstrap cache
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
-    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Copy built assets from Stage 1
-COPY --from=builder /app/public/build /var/www/public/build
-
-# Copy Nginx and Supervisor configurations
+COPY --from=assets /app/public/build public/build
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-skillbridge.ini
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 8080
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Migrations only - seeders are never run automatically. Migrate runs as root,
+# so anything it writes under storage/ is handed back to www-data before PHP-FPM
+# starts; otherwise a root-owned log or cache file causes permission errors later.
+CMD ["sh", "-c", "php artisan migrate --force --no-interaction && chown -R www-data:www-data storage bootstrap/cache && exec /usr/bin/supervisord -c /etc/supervisord.conf"]

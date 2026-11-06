@@ -1,19 +1,37 @@
+# Version control and editor config
 .git
+.git_disabled
 .github
-.env
-.env.example
-.styleci.yml
 .editorconfig
 .gitattributes
+
+# Secrets - environment is supplied at runtime, never baked into the image
+.env
+.env.*
+
+# Installed or built locally - rebuilt inside the image
 /vendor/
 /node_modules/
 /public/build/
 /public/hot
 /public/storage
+/bootstrap/cache/*.php
+
+# Local runtime state - the Dockerfile creates Laravel's writable directories
 /storage/*.key
 /storage/framework/
 /storage/logs/
 /storage/app/
+
+# Local development database - contains real accounts and password hashes
+/database/*.sqlite*
+
+# Not needed to run the application
+docs/
+tools/
+tests/
+*.md
+phpunit.xml
 docker-compose.yml
 Dockerfile
-README.md
+.dockerignore

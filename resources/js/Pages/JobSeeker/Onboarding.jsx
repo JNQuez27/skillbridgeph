@@ -1,42 +1,37 @@
 import { useMemo, useState } from "react";
+import { router } from "@inertiajs/react";
 import Button from "./components/ui/Button";
 import Card from "./components/ui/Card";
 import Input from "./components/ui/Input";
 import Badge from "./components/ui/Badge";
 import ProgressBar from "./components/ui/ProgressBar";
+import FlashBanner from "./components/ui/FlashBanner";
 import { ToastProvider, useToast } from "./components/ui/ToastProvider";
 import { skillOptions } from "./data/jobSeekerData";
-import { useRequireAuth } from "./hooks/useAuth";
-import { getSession, setSession } from "./hooks/useSession";
 
 const steps = [
   { key: "basic", title: "Basic Info" },
   { key: "skills", title: "Skills" },
   { key: "education", title: "Education" },
   { key: "experience", title: "Experience" },
-  { key: "portfolio", title: "Portfolio" },
   { key: "review", title: "Review" },
 ];
 
 function OnboardingContent() {
-  useRequireAuth();
+  // Route is protected by `auth` middleware server-side, so no client guard needed.
   const { addToast } = useToast();
   const [stepIndex, setStepIndex] = useState(0);
   const [skillSearch, setSkillSearch] = useState("");
   const [customSkill, setCustomSkill] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    avatarUrl: "",
     bio: "",
     location: "",
-    contact: "",
+    desiredRoles: "",
     skills: [],
     education: { school: "", degree: "", year: "" },
     experience: { title: "", company: "", description: "" },
     experienceLevel: "",
-    portfolio: [""],
-    completedAssessmentsInput: "",
-    verifiedBadgesInput: "",
   });
 
   const progress = Math.round(((stepIndex + 1) / steps.length) * 100);
@@ -46,13 +41,6 @@ function OnboardingContent() {
       skill.toLowerCase().includes(skillSearch.toLowerCase())
     );
   }, [skillSearch]);
-
-  const handleAvatarChange = (event) => {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    const nextUrl = URL.createObjectURL(file);
-    setFormData((prev) => ({ ...prev, avatarUrl: nextUrl }));
-  };
 
   const toggleSkill = (skill) => {
     setFormData((prev) => {
@@ -75,70 +63,55 @@ function OnboardingContent() {
     setCustomSkill("");
   };
 
-  const updatePortfolio = (index, value) => {
-    setFormData((prev) => {
-      const nextPortfolio = [...prev.portfolio];
-      nextPortfolio[index] = value;
-      return { ...prev, portfolio: nextPortfolio };
-    });
-  };
-
-  const parseListInput = (value) => value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
   const isStepValid = useMemo(() => {
-    const { bio, skills, education, portfolio, location, contact, experienceLevel, completedAssessmentsInput, verifiedBadgesInput } = formData;
-    if (stepIndex === 0) return bio.length > 0 && bio.length <= 150 && location.trim().length > 0 && contact.trim().length > 0;
+    const { bio, skills, education, location, desiredRoles, experienceLevel } = formData;
+    if (stepIndex === 0) return bio.length > 0 && bio.length <= 150 && location.trim().length > 0 && desiredRoles.trim().length > 0;
     if (stepIndex === 1) return skills.length > 0;
     if (stepIndex === 2) return education.school && education.degree && education.year;
     if (stepIndex === 3) return experienceLevel.trim().length > 0;
-    if (stepIndex === 4) {
-      const hasPortfolio = portfolio.some((link) => link.trim().length > 0);
-      const hasAssessments = completedAssessmentsInput.trim().length > 0;
-      const hasBadges = verifiedBadgesInput.trim().length > 0;
-      return hasPortfolio || hasAssessments || hasBadges;
-    }
     return true;
   }, [formData, stepIndex]);
 
   const handleSubmit = () => {
     setSubmitting(true);
-    setTimeout(() => {
-      const currentSession = getSession();
-      const applicantProfile = {
-        name: currentSession?.name || "",
+    // Everything collected here is saved. Skills are stored as self-reported;
+    // they become verified only through an assessment or an employer's review.
+    router.put(
+      "/applicant-profile",
+      {
+        bio: formData.bio.trim(),
         location: formData.location.trim(),
-        contact: formData.contact.trim(),
+        experienceLevel: formData.experienceLevel || undefined,
+        headline: formData.experience.title.trim() || undefined,
+        desiredRoles: formData.desiredRoles.split(",").map((r) => r.trim()).filter(Boolean),
         skills: formData.skills,
-        experience: {
-          ...formData.experience,
-          level: formData.experienceLevel,
-        },
         education: formData.education,
-        portfolio: formData.portfolio.filter((link) => link.trim().length > 0),
-        completedAssessments: parseListInput(formData.completedAssessmentsInput),
-        verifiedBadges: parseListInput(formData.verifiedBadgesInput),
-      };
-      setSession({
-        ...currentSession,
-        applicantProfile,
-        applicantProfileComplete: true,
-      });
-      addToast({ message: "Onboarding complete. Welcome aboard!", type: "success" });
-      window.location.href = "/dashboard";
-    }, 700);
+        experience: formData.experience,
+      },
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          addToast({ message: "Profile saved. Next: verify your skills with the recommended assessments.", type: "success" });
+          router.visit("/dashboard?tab=skills");
+        },
+        onError: (errors) => {
+          const first = Object.values(errors || {})[0];
+          addToast({ message: first || "Could not save your profile. Please review your answers.", type: "error" });
+        },
+        onFinish: () => setSubmitting(false),
+      }
+    );
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8">
+    <div className="min-h-screen bg-sky-50 px-4 py-8 font-sans text-slate-800">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-500">SkillBridge PH</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-900">Applicant Onboarding</h1>
+          <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sky-700">SkillBridge PH</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-sky-900">Applicant Onboarding</h1>
           <p className="mt-2 text-sm text-slate-500">Complete your profile to get matched with more opportunities.</p>
         </div>
+        <FlashBanner />
 
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -162,19 +135,6 @@ function OnboardingContent() {
 
         {stepIndex === 0 && (
           <Card className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-100">
-                {formData.avatarUrl ? (
-                  <img src={formData.avatarUrl} alt="Profile" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">Photo</div>
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-700">Profile picture</p>
-                <input type="file" accept="image/*" onChange={handleAvatarChange} />
-              </div>
-            </div>
             <Input
               id="onboard-bio"
               label="Short bio"
@@ -192,11 +152,12 @@ function OnboardingContent() {
               onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
             />
             <Input
-              id="onboard-contact"
-              label="Contact"
-              placeholder="Mobile number or email"
-              value={formData.contact}
-              onChange={(event) => setFormData((prev) => ({ ...prev, contact: event.target.value }))}
+              id="onboard-roles"
+              label="Roles you want (comma-separated)"
+              placeholder="Frontend Developer, Barista"
+              value={formData.desiredRoles}
+              onChange={(event) => setFormData((prev) => ({ ...prev, desiredRoles: event.target.value }))}
+              hint="Matching jobs are flagged to your account automatically."
             />
           </Card>
         )}
@@ -234,6 +195,25 @@ function OnboardingContent() {
                 Add skill
               </Button>
             </div>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900" role="note">
+              <strong>Every skill you add is saved as Pending.</strong> It stays pending until you verify it, by passing an
+              assessment or having your work reviewed. Employers see verified skills first.
+            </div>
+            {formData.skills.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Your skills ({formData.skills.length})</p>
+                <ul className="mt-2 flex flex-wrap gap-2" aria-label="Skills you added">
+                  {formData.skills.map((skill) => (
+                    <li key={skill} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1 text-xs font-semibold text-slate-700">
+                      {skill}
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">Pending</span>
+                      <button type="button" onClick={() => toggleSkill(skill)} aria-label={`Remove ${skill}`}
+                        className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">×</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </Card>
         )}
 
@@ -317,7 +297,7 @@ function OnboardingContent() {
               }
             />
             <label className="flex flex-col gap-2 text-sm text-slate-600">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Experience level</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Experience level</span>
               <select
                 className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
                 value={formData.experienceLevel}
@@ -333,48 +313,12 @@ function OnboardingContent() {
         )}
 
         {stepIndex === 4 && (
-          <Card className="space-y-4">
-            {formData.portfolio.map((link, index) => (
-              <Input
-                key={`portfolio-${index}`}
-                id={`portfolio-${index}`}
-                label={`Portfolio link ${index + 1}`}
-                placeholder="https://"
-                value={link}
-                onChange={(event) => updatePortfolio(index, event.target.value)}
-              />
-            ))}
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setFormData((prev) => ({ ...prev, portfolio: [...prev.portfolio, ""] }))}
-            >
-              Add another link
-            </Button>
-            <Input
-              id="completed-assessments"
-              label="Completed assessments (comma-separated)"
-              placeholder="Customer Service Essentials, Retail Ops Basics"
-              value={formData.completedAssessmentsInput}
-              onChange={(event) => setFormData((prev) => ({ ...prev, completedAssessmentsInput: event.target.value }))}
-            />
-            <Input
-              id="verified-badges"
-              label="Verified badges (comma-separated)"
-              placeholder="Client Champion, Content Builder"
-              value={formData.verifiedBadgesInput}
-              onChange={(event) => setFormData((prev) => ({ ...prev, verifiedBadgesInput: event.target.value }))}
-            />
-          </Card>
-        )}
-
-        {stepIndex === 5 && (
           <Card className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-800">Basic Info</p>
                 <p className="text-xs text-slate-500">{formData.bio}</p>
-                <p className="mt-1 text-xs text-slate-500">{formData.location} · {formData.contact}</p>
+                <p className="mt-1 text-xs text-slate-500">{formData.location} · wants: {formData.desiredRoles}</p>
               </div>
               <Button type="button" variant="ghost" onClick={() => setStepIndex(0)}>
                 Edit
@@ -385,7 +329,7 @@ function OnboardingContent() {
                 <p className="text-sm font-semibold text-slate-800">Skills</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {formData.skills.map((skill) => (
-                    <Badge key={skill} tone="info">{skill}</Badge>
+                    <Badge key={skill} tone="info">{skill} · Pending</Badge>
                   ))}
                 </div>
               </div>
@@ -414,17 +358,10 @@ function OnboardingContent() {
                 Edit
               </Button>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-slate-800">Portfolio</p>
-                <p className="text-xs text-slate-500">{formData.portfolio.filter(Boolean).join(", ")}</p>
-                <p className="mt-1 text-xs text-slate-500">Assessments: {formData.completedAssessmentsInput || "-"}</p>
-                <p className="mt-1 text-xs text-slate-500">Badges: {formData.verifiedBadgesInput || "-"}</p>
-              </div>
-              <Button type="button" variant="ghost" onClick={() => setStepIndex(4)}>
-                Edit
-              </Button>
-            </div>
+            <p className="rounded-xl border border-sky-100 bg-sky-50/70 p-3 text-xs text-slate-600">
+              Your skills are saved as <strong>self-reported</strong>. To get them verified, take a company
+              assessment or upload evidence from your dashboard. Verified skills rank you higher with employers.
+            </p>
           </Card>
         )}
 

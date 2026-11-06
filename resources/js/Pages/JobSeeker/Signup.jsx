@@ -1,171 +1,85 @@
-import { useMemo, useState } from "react";
+import { useForm } from "@inertiajs/react";
 import AuthLayout from "./components/layout/AuthLayout";
 import Input from "./components/ui/Input";
+import Select from "./components/ui/Select";
 import Button from "./components/ui/Button";
-import { useAuthState } from "./hooks/useAuth";
-import { getSession, setSession } from "./hooks/useSession";
-import { ToastProvider, useToast } from "./components/ui/ToastProvider";
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const roleOptions = [
+  { value: "jobseeker", label: "Applicant" },
+  { value: "employer", label: "Employer" },
+];
 
-function SignupContent() {
-  const { signIn } = useAuthState();
-  const { addToast } = useToast();
-  const [role, setRole] = useState("jobseeker");
-  const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [surname, setSurname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [loading, setLoading] = useState(false);
+export default function Signup() {
+  const { data, setData, post, processing, errors } = useForm({
+    // "Post a job" links arrive with ?role=employer preselected.
+    role: new URLSearchParams(window.location.search).get("role") === "employer" ? "employer" : "jobseeker",
+    firstName: "",
+    middleName: "",
+    surname: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+    acceptPrivacy: false,
+  });
 
-  const roleCopy = {
-    jobseeker: {
-      title: "Create your Applicant account",
-      subtitle: "Join SkillBridge PH and start building your skill-based profile.",
-      helper: "Looking for work",
-    },
-    employer: {
-      title: "Create your Employer account",
-      subtitle: "Start posting roles and reviewing verified candidates.",
-      helper: "Hiring teams",
-    },
-  };
-
-  const roleOptions = [
-    {
-      key: "jobseeker",
-      label: "Applicant",
-      description: "Fresh graduates and applicants",
-    },
-    {
-      key: "employer",
-      label: "Employer",
-      description: "Companies hiring talent",
-    },
-  ];
-
-  const errors = useMemo(() => {
-    return {
-      firstName: firstName.trim().length === 0 ? "First name is required" : "",
-      middleName: middleName.trim().length === 0 ? "Middle name is required" : "",
-      surname: surname.trim().length === 0 ? "Surname is required" : "",
-      email: email.length > 0 && !emailRegex.test(email) ? "Enter a valid email" : "",
-      password: password.length > 0 && password.length < 8 ? "Minimum 8 characters" : "",
-      confirm: confirm.length > 0 && confirm !== password ? "Passwords do not match" : "",
-    };
-  }, [firstName, middleName, surname, email, password, confirm]);
-
-  const isValid = useMemo(() => {
-    return (
-      firstName.trim().length > 0 &&
-      middleName.trim().length > 0 &&
-      surname.trim().length > 0 &&
-      emailRegex.test(email) &&
-      password.length >= 8 &&
-      confirm === password
-    );
-  }, [firstName, middleName, surname, email, password, confirm]);
-
-  const buildFullName = (first, middle, last) => {
-    return [first, middle, last].map((value) => value.trim()).filter(Boolean).join(" ");
-  };
-
-  const handleSubmit = (event) => {
+  const submit = (event) => {
     event.preventDefault();
-    if (!isValid) return;
-    setLoading(true);
-    setTimeout(() => {
-      const currentSession = getSession();
-      const fullName = buildFullName(firstName, middleName, surname);
-      setSession({
-        ...currentSession,
-        name: fullName,
-        firstName: firstName.trim(),
-        middleName: middleName.trim(),
-        surname: surname.trim(),
-        role,
-        applicantProfileComplete: role === "jobseeker" ? false : true,
-        employerNeedsValidation: role === "employer",
-      });
-      signIn();
-      addToast({ message: "Account created. Welcome to SkillBridge PH!", type: "success" });
-      if (role === "employer") {
-        window.location.href = "/dashboard?role=employer&validate=employer";
-      } else {
-        window.location.href = "/onboarding";
-      }
-    }, 700);
+    post("/register");
   };
+
+  const isEmployer = data.role === "employer";
+  const title = isEmployer ? "Create your Employer account" : "Create your Applicant account";
+  const subtitle = isEmployer
+    ? "Start posting roles and reviewing verified candidates."
+    : "Join SkillBridge PH and start building your skill-based profile.";
+  const nextStepHint = isEmployer
+    ? "Next: set up your company details and verify your business."
+    : "Next: build your profile — skills, education, and experience.";
 
   return (
-    <AuthLayout
-      title={roleCopy[role].title}
-      subtitle={roleCopy[role].subtitle}
-    >
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <div className="rounded-2xl border border-emerald-100 bg-white/80 p-4">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.35em] text-emerald-600">
-            <span>Choose account type</span>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] text-emerald-700">
-              {roleCopy[role].helper}
-            </span>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {roleOptions.map((option) => {
-              const isActive = role === option.key;
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  aria-pressed={isActive}
-                  onClick={() => setRole(option.key)}
-                  className={`rounded-xl border px-4 py-3 text-left text-sm transition ${isActive
-                    ? "border-emerald-500 bg-emerald-50/80 text-emerald-900 shadow-sm"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50/40"
-                  }`}
-                >
-                  <div className="text-sm font-semibold">{option.label}</div>
-                  <div className={`mt-1 text-xs ${isActive ? "text-emerald-700" : "text-slate-500"}`}>
-                    {option.description}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+    <AuthLayout title={title} subtitle={subtitle}>
+      <form className="flex flex-col gap-3" onSubmit={submit}>
+        <Select
+          id="signup-role"
+          label="I'm signing up as"
+          value={data.role}
+          onChange={(event) => setData("role", event.target.value)}
+          options={roleOptions}
+          hint={nextStepHint}
+          error={errors.role}
+        />
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            id="signup-first-name"
+            label="First name"
+            placeholder="Andrea"
+            value={data.firstName}
+            onChange={(event) => setData("firstName", event.target.value)}
+            error={errors.firstName}
+          />
+          <Input
+            id="signup-surname"
+            label="Surname"
+            placeholder="Santos"
+            value={data.surname}
+            onChange={(event) => setData("surname", event.target.value)}
+            error={errors.surname}
+          />
         </div>
         <Input
-          id="signup-first-name"
-          label="First Name"
-          placeholder="Andrea"
-          value={firstName}
-          onChange={(event) => setFirstName(event.target.value)}
-          error={errors.firstName}
-        />
-        <Input
           id="signup-middle-name"
-          label="Middle Name"
+          label="Middle name (optional)"
           placeholder="Lopez"
-          value={middleName}
-          onChange={(event) => setMiddleName(event.target.value)}
-          error={errors.middleName}
-        />
-        <Input
-          id="signup-surname"
-          label="Surname"
-          placeholder="Santos"
-          value={surname}
-          onChange={(event) => setSurname(event.target.value)}
-          error={errors.surname}
+          value={data.middleName}
+          onChange={(event) => setData("middleName", event.target.value)}
         />
         <Input
           id="signup-email"
           label="Email"
           type="email"
           placeholder="you@email.com"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          value={data.email}
+          onChange={(event) => setData("email", event.target.value)}
           error={errors.email}
         />
         <Input
@@ -173,37 +87,42 @@ function SignupContent() {
           label="Password"
           type="password"
           placeholder="At least 8 characters"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
+          value={data.password}
+          onChange={(event) => setData("password", event.target.value)}
           error={errors.password}
         />
         <Input
           id="signup-confirm"
-          label="Confirm Password"
+          label="Confirm password"
           type="password"
           placeholder="Repeat password"
-          value={confirm}
-          onChange={(event) => setConfirm(event.target.value)}
-          error={errors.confirm}
+          value={data.password_confirmation}
+          onChange={(event) => setData("password_confirmation", event.target.value)}
         />
-        <Button type="submit" loading={loading} disabled={!isValid} className="w-full">
-          Create Account
+        <label className="flex items-start gap-3 rounded-xl border border-sky-100 bg-sky-50/70 p-3 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4"
+            checked={data.acceptPrivacy}
+            onChange={(event) => setData("acceptPrivacy", event.target.checked)}
+          />
+          <span>
+            I have read the{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-sky-700 underline">Privacy Notice</a>{" "}
+            and agree to SkillBridge PH processing my information to match me with {isEmployer ? "candidates" : "jobs"}.
+          </span>
+        </label>
+        {errors.acceptPrivacy && <p role="alert" className="text-xs text-rose-600">Please accept the Privacy Notice to create an account.</p>}
+        <Button type="submit" loading={processing} disabled={processing || !data.acceptPrivacy} className="mt-1 w-full">
+          Create account
         </Button>
         <p className="text-center text-xs text-slate-500">
           Already have an account?{" "}
-          <a className="font-semibold text-emerald-600 hover:text-emerald-700" href="/login">
+          <a className="font-semibold text-sky-700 hover:text-sky-800" href="/login">
             Log in
           </a>
         </p>
       </form>
     </AuthLayout>
-  );
-}
-
-export default function Signup() {
-  return (
-    <ToastProvider>
-      <SignupContent />
-    </ToastProvider>
   );
 }
