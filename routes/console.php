@@ -11,6 +11,12 @@ Artisan::command('demo:seed-if-empty', function () {
 
         return 0;
     }
+    // A public site must never get admin@skillbridge.ph with the known default password.
+    if (app()->isProduction() && blank(env('DEMO_PASSWORD'))) {
+        $this->error('Set DEMO_PASSWORD before seeding demo accounts in production; demo seed skipped.');
+
+        return 0;   // the site still starts; the seed runs on the next start once it is set
+    }
     $this->call('db:seed', ['--force' => true]);
 })->purpose('Seed the demo data only when the database has no users');
 
