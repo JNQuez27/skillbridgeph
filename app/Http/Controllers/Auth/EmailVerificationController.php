@@ -44,7 +44,13 @@ class EmailVerificationController extends Controller
         if ($request->user()->hasVerifiedEmail()) {
             return redirect($this->next($request));
         }
-        $request->user()->sendEmailVerificationNotification();
+        try {
+            $request->user()->sendEmailVerificationNotification();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'The confirmation email could not be sent right now. Please try again in a few minutes.');
+        }
 
         return back()->with('success', 'A new confirmation link was sent to '.$request->user()->email.'.');
     }

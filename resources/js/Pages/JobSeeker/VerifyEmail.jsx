@@ -1,18 +1,16 @@
-import { router, useForm, usePage } from "@inertiajs/react";
+import { router, useForm } from "@inertiajs/react";
 import AuthLayout from "./components/layout/AuthLayout";
 import Button from "./components/ui/Button";
+import FlashBanner from "./components/ui/FlashBanner";
 
 // Fig. 3, step 310: the account confirms its email before onboarding.
 export default function VerifyEmail({ email }) {
-  const { props } = usePage();
   const { post, processing } = useForm({});
 
   return (
     <AuthLayout title="Confirm your email" subtitle="One quick step before you build your profile.">
       <div className="flex flex-col gap-4">
-        {props.flash?.success && (
-          <div role="status" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{props.flash.success}</div>
-        )}
+        <FlashBanner />
         <div className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-4 text-sm text-slate-700">
           We sent a confirmation link to <strong className="break-all text-sky-900">{email}</strong>.
         </div>

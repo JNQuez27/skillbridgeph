@@ -19,7 +19,14 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
-        $status = Password::sendResetLink($request->only('email'));
+        // A send failure only happens for an existing account, so it must give the
+        // same answer as success, or an error would reveal who is registered.
+        try {
+            $status = Password::sendResetLink($request->only('email'));
+        } catch (\Throwable $e) {
+            report($e);
+            $status = Password::RESET_LINK_SENT;
+        }
 
         if ($status === Password::RESET_THROTTLED) {
             return back()->withErrors(['email' => 'Please wait a minute before asking for another link.']);

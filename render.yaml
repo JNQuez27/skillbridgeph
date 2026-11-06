@@ -3,6 +3,8 @@
 #
 #   APP_KEY        run `php artisan key:generate --show` locally and paste the output
 #   DEMO_PASSWORD  the password for the demo accounts (admin@skillbridge.ph, ...)
+#   BREVO_API_KEY / MAIL_FROM_ADDRESS  sign-up and reset emails (free Brevo account,
+#                  sender address verified in Brevo)
 #
 # Free plan limits: the service sleeps after ~15 idle minutes (first visit then
 # takes about a minute), the free database expires after 30 days, and there is no
@@ -47,8 +49,14 @@ services:
         value: file
       - key: LOG_CHANNEL
         value: stderr
-      - key: MAIL_MAILER          # emails go to the log until real SMTP is configured
-        value: log
+      - key: MAIL_MAILER          # Brevo's HTTPS API; the free plan blocks SMTP ports
+        value: brevo
+      - key: BREVO_API_KEY        # Brevo > SMTP & API > API keys
+        sync: false
+      - key: MAIL_FROM_ADDRESS    # must be a sender verified in Brevo > Senders
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: SkillBridge PH
     # disk:                        # paid plans only
     #   name: uploads
     #   mountPath: /var/www/storage/app

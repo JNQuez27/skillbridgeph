@@ -28,6 +28,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Transactional email (MAIL_MAILER=brevo): an API key from Brevo > SMTP & API > API keys.
+    'brevo' => [
+        'key' => env('BREVO_API_KEY'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

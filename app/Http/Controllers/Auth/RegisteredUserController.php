@@ -57,8 +57,17 @@ class RegisteredUserController extends Controller
             $matcher->syncFlaggedMatches($profile);
         }
 
-        event(new Registered($user));
         Auth::login($user);
+
+        // The account exists either way; a mail outage must not turn sign-up into an
+        // error page. The person can press "Resend" on the next screen.
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect('/verify-email')->with('error', 'Your account was created, but the confirmation email could not be sent. Press "Resend" in a moment.');
+        }
 
         // Fig. 3: confirm the email first (310); the role then decides the next
         // screen (315): applicant onboarding (325) or employer sign-up (320).
