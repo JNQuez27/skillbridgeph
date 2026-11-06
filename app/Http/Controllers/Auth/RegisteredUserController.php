@@ -24,6 +24,8 @@ class RegisteredUserController extends Controller
             'surname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
+            // Data Privacy Act (RA 10173): processing needs the person's informed consent.
+            'acceptPrivacy' => ['accepted'],
         ]);
 
         $fullName = trim(collect([$validated['firstName'], $validated['middleName'] ?? null, $validated['surname']])
@@ -38,6 +40,7 @@ class RegisteredUserController extends Controller
             'role' => $validated['role'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'privacy_accepted_at' => now(),
         ]);
 
         if ($user->role === 'employer') {
@@ -57,8 +60,8 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        return $user->role === 'employer'
-            ? redirect('/dashboard?role=employer')
-            : redirect('/dashboard');
+        // Fig. 3: confirm the email first (310); the role then decides the next
+        // screen (315): applicant onboarding (325) or employer sign-up (320).
+        return redirect('/verify-email');
     }
 }

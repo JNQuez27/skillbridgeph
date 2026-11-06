@@ -1,3 +1,4 @@
+import { Head } from "@inertiajs/react";
 import Card from "../ui/Card";
 
 const trustPoints = [
@@ -9,6 +10,7 @@ const trustPoints = [
 export default function AuthLayout({ title, subtitle, children }) {
   return (
     <div className="min-h-screen w-full bg-sky-50 font-sans text-slate-800 md:grid md:grid-cols-2">
+      <Head title={title} />
       {/* Brand panel (desktop) */}
       <aside className="relative hidden overflow-hidden bg-gradient-to-br from-sky-900 via-sky-800 to-sky-600 p-10 text-white md:flex md:flex-col md:justify-between lg:p-14">
         <div className="pointer-events-none absolute inset-0 opacity-40">
@@ -25,7 +27,7 @@ export default function AuthLayout({ title, subtitle, children }) {
           <ul className="mt-8 flex flex-col gap-4">
             {trustPoints.map((point) => (
               <li key={point} className="flex items-start gap-3 text-sm text-sky-50">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500 text-[11px] font-bold text-white">
+                <span aria-hidden="true" className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-700 text-xs font-bold text-white">
                   ✓
                 </span>
                 {point}

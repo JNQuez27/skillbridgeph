@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import AuthLayout from "./components/layout/AuthLayout";
 import Input from "./components/ui/Input";
 import Button from "./components/ui/Button";
 
 export default function Login() {
+  const { props } = usePage();
   const [showPassword, setShowPassword] = useState(false);
   const { data, setData, post, processing, errors } = useForm({
     email: "",
@@ -20,6 +21,9 @@ export default function Login() {
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to your SkillBridge PH account.">
       <form className="flex flex-col gap-4" onSubmit={submit}>
+        {props.flash?.success && (
+          <div role="status" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{props.flash.success}</div>
+        )}
         {errors.email && (
           <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">{errors.email}</div>
         )}
@@ -41,7 +45,8 @@ export default function Login() {
           rightSlot={
             <button
               type="button"
-              className="text-xs font-semibold text-sky-700 hover:text-sky-800"
+              className="h-11 px-2 text-xs font-semibold text-sky-700 hover:text-sky-800"
+              aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((prev) => !prev)}
             >
               {showPassword ? "Hide" : "Show"}
@@ -57,7 +62,7 @@ export default function Login() {
             />
             Remember me
           </label>
-          <a className="font-medium text-sky-700 hover:text-sky-800" href="/forgot-password">
+          <a className="inline-block py-3 font-medium text-sky-700 hover:text-sky-800" href="/forgot-password">
             Forgot password?
           </a>
         </div>

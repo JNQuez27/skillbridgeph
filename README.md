@@ -26,7 +26,7 @@ The connecting layer between both sides is the **autonomous matching engine**.
 ## Core feature — Autonomous skill matching
 
 Matching runs automatically in both directions from a single scoring function
-([`resources/js/Pages/SkillBridge/utils/matching.js`](resources/js/Pages/SkillBridge/utils/matching.js)):
+([`app/Services/MatchService.php`](app/Services/MatchService.php)):
 
 | Signal | Weight | Notes |
 |---|---:|---|
@@ -75,7 +75,7 @@ employer preview, testimonials, and FAQs, plus scroll animations and a section-a
 - **Frontend:** [React 18](https://react.dev) via [Inertia.js](https://inertiajs.com)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com) + inline design tokens
 - **Build:** [Vite 7](https://vitejs.dev)
-- **Database:** SQLite (default; swappable to MySQL/PostgreSQL)
+- **Database:** PostgreSQL 16 (Docker) or Neon; SQLite for quick local dev
 - **Fonts:** Lexend (display) + Source Sans 3 (body)
 - **Palette:** professional blue `#0369A1` + verified-green `#16A34A`
 
@@ -91,10 +91,14 @@ resources/js/Pages/
 │  │  ├─ GeneralDashboard.jsx     # public dashboard
 │  │  ├─ UserProfile.jsx          # applicant account (Skills/Portfolio/Matches/Assessments)
 │  │  └─ EmployerDashboard.jsx    # employer workspace
-│  ├─ utils/matching.js           # ⭐ the matching engine
-│  ├─ components/Icons.jsx        # line icons
-│  └─ data/mockData.js            # sample data (see Project status)
+│  ├─ styles/ui.js               # shared design tokens (palette + fonts)
+│  └─ components/Icons.jsx        # line icons
 └─ JobSeeker/                      # auth flow (login / signup / onboarding)
+
+app/
+├─ Services/MatchService.php      # ⭐ the matching engine
+├─ Http/Controllers/              # dashboard, jobs, credentials, assessments, invites
+└─ Models/                        # User, ApplicantProfile, JobPost, Application, ...
 ```
 
 ---
@@ -110,8 +114,7 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# 3. Set up the database (SQLite by default)
-touch database/database.sqlite
+# 3. Set up the database (set DB_* in .env — Postgres/MySQL/SQLite)
 php artisan migrate
 
 # 4. Run the app (Laravel + Vite)
@@ -123,26 +126,71 @@ Build for production with `npm run build`.
 
 ---
 
+Demo data is never loaded automatically. To load it locally: `php artisan db:seed`.
+
+---
+
+## Running with Docker
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+`docker-compose.yml` defines two services: **app** (Nginx + PHP-FPM) and **db** (PostgreSQL 16).
+
+```bash
+# Full stack - app at http://localhost:8080, database in a container
+docker compose up -d --build
+
+# Optional: load demo data
+docker compose exec app php artisan db:seed --force
+
+# Logs / stop / reset
+docker compose logs -f app
+docker compose down        # stop, keep data
+docker compose down -v     # stop and DELETE the database and uploads
+```
+
+**Database only** - keep `php artisan serve` for development, but use the same
+engine as production instead of SQLite:
+
+```bash
+docker compose up -d db
+# then in .env: comment DB_CONNECTION=sqlite and uncomment the DOCKER POSTGRES block
+php artisan migrate
+```
+
+Data lives in named volumes (`pgdata`, `uploads`), so it survives restarts and rebuilds.
+
+---
+
 ## Deployment
 
-A [`Dockerfile`](Dockerfile) and `docker/` config are included for container deployment
-(e.g. Render). Build the image and run migrations as part of the release step.
+The same [`Dockerfile`](Dockerfile) runs on any container host (Render, Railway, Fly.io,
+a VPS). Set `APP_KEY` and the `DB_*` variables in the host's environment settings -
+`.env` is never copied into the image. Migrations run on container start; seeders do not.
+
+Uploaded credentials are written to `storage/app`, so the host must provide a
+**persistent disk** there (or the storage driver must be switched to object storage).
+Serverless platforms such as Vercel have no persistent disk and no PHP runtime, so
+they cannot host this application.
 
 ---
 
 ## Project status
 
-The product design and the **matching engine** are implemented, along with the full
-UI for the public dashboard, applicant account, employer workspace, and auth flow.
+The system is database-backed and functional end to end.
 
-**In progress toward a fully autonomous, multi-user system:**
+- [x] Jobs, profiles, skills, applications, and matches persisted in the database
+- [x] Real cross-account matching (employer posts → applicant accounts flagged automatically)
+- [x] Credential uploads — CVs, certificates, portfolios, and hands-on demo videos
+- [x] Badge verification via company assessments with real HR questions (IT / food service / healthcare)
+- [x] Session auth with role-based applicant and employer dashboards
 
-- [ ] Persist jobs, profiles, and matches in the Laravel database (replacing in-browser sample data)
-- [ ] Real cross-account matching (employer posts → applicant accounts flagged automatically)
-- [ ] Applicant credential file uploads (resume/CV, certificates) with storage
-- [ ] Remove remaining hardcoded sample data in favor of real records
+**Not yet implemented:**
 
-See [`SYSTEM_DEMO.md`](SYSTEM_DEMO.md) for a walkthrough of the current demo.
+- [ ] Employer assessment assignment
+- [ ] Automatic TESDA registry lookup (admin uses a pre-filled link for now)
+
+**Admin:** create one with `php artisan admin:create you@example.com`, then sign in and open `/admin`
+to approve companies (DTI/SEC) and certificates (TESDA/PRC). The demo seeder adds `admin@skillbridge.ph`.
 
 ---
 

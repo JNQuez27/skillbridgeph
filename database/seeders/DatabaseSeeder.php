@@ -3,28 +3,74 @@
 namespace Database\Seeders;
 
 use App\Models\ApplicantProfile;
+use App\Models\Application;
+use App\Models\Credential;
 use App\Models\CompanyAssessment;
 use App\Models\EmployerProfile;
 use App\Models\JobPost;
 use App\Models\User;
+use App\Services\CredentialAnalyzer;
 use App\Services\MatchService;
 use Illuminate\Database\Seeder;
+use ZipArchive;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
+    use EarnsBadges;
+
     public function run(): void
+    {
+        // Demo data is not a real status change: send no application notifications.
+        Application::withoutEvents(fn () => $this->seed());
+    }
+
+    private function seed(): void
     {
         $this->seedItEmployer();
         $this->seedRestaurantEmployer();
         $this->seedClinicEmployer();
         $this->seedApplicants();
+        $this->seedOwnerAccounts();
+        $this->earnDemoBadges();
+        $this->seedVerificationQueue();
+
+        // Fill out the registered applicant account (skips if absent).
+        $this->call(ApplicantShowcaseSeeder::class);
 
         // Autonomous matching: flag fitting jobs onto every applicant account.
         $matcher = app(MatchService::class);
         ApplicantProfile::with('skills')->get()->each(
             fn (ApplicantProfile $profile) => $matcher->syncFlaggedMatches($profile)
         );
+
+        $this->seedOpenInvitation($matcher);
+    }
+
+    /**
+     * Fig. 20 demo: a work sample linked to a skill that is still only claimed,
+     * so it counts as evidence (80%) without being a verified badge.
+     */
+    private function seedLinkedWorkSample(ApplicantProfile $cleo): void
+    {
+        $this->evidenceFile($cleo, 'portfolio', 'Figma UI mockups', 'cleo-ramos-figma-mockups.pdf', [
+            'Figma UI mockups - Cleo Ramos', 'Mobile checkout flow designed in Figma, 6 screens', 'Shared component library with auto layout',
+        ], ['Figma'])->update(['linked_skills' => ['Figma']]);
+    }
+
+    /** Fig. 19 demo: Cleo has an open invitation to answer (Accept 1914 / Decline 1916). */
+    private function seedOpenInvitation(MatchService $matcher): void
+    {
+        $cleo = User::where('email', 'cleo.ramos@skillbridge.ph')->first()?->applicantProfile;
+        $job = JobPost::where('title', 'Junior React Developer')->first();
+        if ($cleo && $job) {
+            Application::updateOrCreate(
+                ['job_post_id' => $job->id, 'applicant_profile_id' => $cleo->id],
+                ['status' => 'invited', 'match_score' => $matcher->score($job, $cleo->load('skills'))['score']]
+            );
+        }
     }
 
     private function makeEmployer(string $email, string $name, array $profileData): EmployerProfile
@@ -38,6 +84,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ]
         );
+        $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save(); // seeded: no inbox to confirm
 
         return EmployerProfile::updateOrCreate(['user_id' => $user->id], $profileData);
     }
@@ -97,30 +144,61 @@ class DatabaseSeeder extends Seeder
             [
                 'title' => 'React UI Fundamentals', 'role' => 'Junior Frontend Developer', 'skill' => 'React',
                 'questions' => [
-                    ['prompt' => 'Which hook lets a function component hold local state?', 'options' => ['useState', 'useEffect', 'useRef', 'useMemo'], 'answer' => 0],
-                    ['prompt' => 'What prop is required when rendering a list of elements?', 'options' => ['key', 'id', 'ref', 'name'], 'answer' => 0],
-                    ['prompt' => 'In JSX, `className` maps to which HTML attribute?', 'options' => ['class', 'id', 'style', 'for'], 'answer' => 0],
-                    ['prompt' => 'Which hook runs side effects after render?', 'options' => ['useEffect', 'useState', 'useContext', 'useReducer'], 'answer' => 0],
-                    ['prompt' => 'How do you pass data from a parent to a child component?', 'options' => ['Props', 'State', 'Context only', 'Refs'], 'answer' => 0],
+                    // Job knowledge: react.dev/reference/react/useState
+                    ['prompt' => 'Which hook adds state to a function component?', 'options' => ['useEffect', 'useState', 'useRef', 'useMemo'], 'answer' => 1],
+                    // Job knowledge: react.dev/learn/rendering-lists
+                    ['prompt' => 'Why does React ask for a `key` on each item when rendering a list?', 'options' => ['To style each item differently', 'To make the items clickable', 'To identify which items changed, were added, or were removed between renders', 'To sort the list alphabetically'], 'answer' => 2],
+                    // Job knowledge: react.dev/reference/react/useEffect
+                    ['prompt' => 'A component must fetch data from an API when it first appears on screen. Where does that code belong?', 'options' => ['Inside a useEffect hook', 'Directly in the JSX return', 'Inside a CSS file', 'In the key prop'], 'answer' => 0],
+                    // Job knowledge: react.dev/learn/passing-props-to-a-component
+                    ['prompt' => 'How does a parent component pass data down to a child component?', 'options' => ['Through global variables', 'Through props', 'By editing the child file', 'Through the browser URL only'], 'answer' => 1],
+                    // Situational judgment (LinkedIn: prioritization / collaboration)
+                    ['prompt' => 'The page you built does not match the designer\'s mobile mockup, and the deadline is tomorrow. What is the best first step?', 'options' => ['Ship it and hope nobody notices', 'Quietly change the design to whatever is easier', 'Tell the designer and lead early, show what differs, and agree on what to fix before the deadline', 'Ask for the deadline to be moved without explaining why'], 'answer' => 2],
+                    // Situational judgment (CareerFoundry: explaining technical work)
+                    ['prompt' => 'A non-technical client asks what an API is. Which answer is most helpful?', 'options' => ['"It is a REST endpoint returning JSON over HTTP."', '"It is like a waiter: your app asks for something, and the API brings back what the kitchen prepared."', '"You would not understand it."', '"It is part of the database."'], 'answer' => 1],
                 ],
             ],
             [
                 'title' => 'Laravel API Build', 'role' => 'Junior Laravel Backend Developer', 'skill' => 'Laravel', 'passing_score' => 75,
                 'questions' => [
-                    ['prompt' => 'Which Artisan command creates a new controller?', 'options' => ['php artisan make:controller', 'php artisan serve', 'php artisan migrate', 'php artisan make:model'], 'answer' => 0],
-                    ['prompt' => 'Eloquent is Laravel\'s...', 'options' => ['ORM', 'templating engine', 'router', 'queue driver'], 'answer' => 0],
-                    ['prompt' => 'Which method throws a 404 when a model is not found?', 'options' => ['findOrFail', 'find', 'first', 'get'], 'answer' => 0],
-                    ['prompt' => 'Where are web routes defined?', 'options' => ['routes/web.php', 'config/app.php', '.env', 'public/index.php'], 'answer' => 0],
-                    ['prompt' => 'What protects forms against CSRF in Blade?', 'options' => ['@csrf', '@auth', '@include', '@yield'], 'answer' => 0],
+                    // Job knowledge: laravel.com/docs/controllers
+                    ['prompt' => 'Which Artisan command creates a new controller?', 'options' => ['php artisan migrate', 'php artisan make:controller', 'php artisan serve', 'php artisan make:model'], 'answer' => 1],
+                    // Job knowledge: laravel.com/docs/eloquent (Not Found Exceptions)
+                    ['prompt' => 'Which Eloquent method automatically returns a 404 response when the record does not exist?', 'options' => ['find()', 'first()', 'findOrFail()', 'get()'], 'answer' => 2],
+                    // Job knowledge: laravel.com/docs/csrf
+                    ['prompt' => 'What should every HTML form that posts to a Laravel web route include?', 'options' => ['@csrf', '@auth', '@yield', '@include'], 'answer' => 0],
+                    // Job knowledge: laravel.com/docs/hashing
+                    ['prompt' => 'How should user passwords be stored?', 'options' => ['As plain text so support can read them', 'Encrypted so they can be decrypted later', 'Hashed, for example with Hash::make()', 'Base64-encoded'], 'answer' => 2],
+                    // Job knowledge: OWASP - client-side checks can be bypassed
+                    ['prompt' => 'A form is already validated with JavaScript in the browser. Should the API validate it again on the server?', 'options' => ['No, browser validation is enough', 'Yes, because browser checks can be bypassed by sending requests directly', 'Only for admin users', 'Only if the form has more than five fields'], 'answer' => 1],
+                    // Situational judgment (LinkedIn: growth potential - manager unavailable)
+                    ['prompt' => 'Users report an error in production and your supervisor is offline. What is the best first step?', 'options' => ['Push an untested fix directly to production', 'Reproduce the error, check the logs, and inform the team of what you found and propose', 'Ignore it until the supervisor is back', 'Delete the failing feature'], 'answer' => 1],
                 ],
             ],
             [
                 'title' => 'WordPress + Webflow Practical', 'role' => 'WordPress & Webflow Developer', 'skill' => 'WordPress',
+                // Figs. 13 and 16: a real task with a work file, scored by NovaByte's rubric.
+                'duration_minutes' => 60,
+                'task_prompt' => "Build a one-page site for a small Davao bakery in WordPress (or Webflow): a hero with the shop name and hours, a menu of 3 items with photos, and a contact section with a map link.\nHand in a PDF with screenshots (desktop and mobile), and put the live or staging link in your answer.",
+                'task_file_required' => true,
+                'rubric' => [
+                    ['criterion' => 'All three sections built and working', 'points' => 10],
+                    ['criterion' => 'Readable on mobile', 'points' => 5],
+                    ['criterion' => 'Accessibility and SEO basics (alt text, headings, page title)', 'points' => 5],
+                ],
                 'questions' => [
-                    ['prompt' => 'A WordPress "child theme" is used to...', 'options' => ['customize safely without losing updates', 'speed up the site', 'install plugins', 'host media'], 'answer' => 0],
-                    ['prompt' => 'Webflow exports code in which languages?', 'options' => ['HTML, CSS, JS', 'PHP only', 'Python', 'Ruby'], 'answer' => 0],
-                    ['prompt' => 'Reusable template parts are included in WP with...', 'options' => ['get_template_part()', 'import()', 'require_all()', 'load_html()'], 'answer' => 0],
-                    ['prompt' => 'Which improves on-page SEO?', 'options' => ['Descriptive title & meta tags', 'Large unoptimized images', 'Hidden text', 'Duplicate pages'], 'answer' => 0],
+                    // Job knowledge: developer.wordpress.org/themes/advanced-topics/child-themes/
+                    ['prompt' => 'Why use a WordPress child theme instead of editing the parent theme?', 'options' => ['So customizations are not lost when the parent theme updates', 'It makes the site load twice as fast', 'It is required to install plugins', 'It hosts the media library'], 'answer' => 0],
+                    // Job knowledge: developer.wordpress.org/reference/functions/get_template_part/
+                    ['prompt' => 'Which WordPress function loads a reusable template part, such as a header section?', 'options' => ['import()', 'load_html()', 'get_template_part()', 'require_all()'], 'answer' => 2],
+                    // Job knowledge: Google Search Central - title links and meta descriptions
+                    ['prompt' => 'Which change best helps a page show well in search results?', 'options' => ['Hiding keywords in white text', 'A unique, descriptive title and meta description', 'Copying the same page several times', 'Using only images instead of text'], 'answer' => 1],
+                    // Job knowledge: W3C WAI images tutorial
+                    ['prompt' => 'What is image alt text mainly for?', 'options' => ['Describing the image for screen-reader users and when the image fails to load', 'Making the image larger', 'Adding a watermark', 'Speeding up page load'], 'answer' => 0],
+                    // Job knowledge: wordpress.org/documentation/article/updating-wordpress/ (back up first)
+                    ['prompt' => 'Before updating plugins on a client\'s live site, you should first...', 'options' => ['Update everything at once and check later', 'Make a full backup, ideally test on a staging copy', 'Delete unused pages', 'Change the admin password'], 'answer' => 1],
+                    // Situational judgment (scope management)
+                    ['prompt' => 'Near the deadline, a client asks for a new feature that was not in the agreed scope. What do you do?', 'options' => ['Build it silently and miss the deadline', 'Refuse without discussion', 'Clarify the request, explain the effect on time or cost, and agree on it before starting', 'Remove another agreed feature to make room'], 'answer' => 2],
                 ],
             ],
         ]);
@@ -148,11 +226,18 @@ class DatabaseSeeder extends Seeder
             [
                 'title' => 'Barista & Cafe Service', 'role' => 'Barista', 'skill' => 'Barista',
                 'questions' => [
-                    ['prompt' => 'A standard espresso shot extracts in about...', 'options' => ['25-30 seconds', '5 seconds', '2 minutes', '10 minutes'], 'answer' => 0],
-                    ['prompt' => 'Milk for a latte is steamed to roughly...', 'options' => ['60-65°C', '100°C', '20°C', '90°C'], 'answer' => 0],
-                    ['prompt' => 'A customer says their drink is wrong. Your best first response?', 'options' => ['Apologize and remake it promptly', 'Argue that it is correct', 'Ignore them', 'Charge them again'], 'answer' => 0],
-                    ['prompt' => 'FIFO in food storage means...', 'options' => ['First In, First Out', 'Fast In, Fast Out', 'Freeze It For One-day', 'Fry In, Fry Out'], 'answer' => 0],
-                    ['prompt' => 'Before handling food you should always...', 'options' => ['Wash your hands', 'Check your phone', 'Skip gloves', 'Rush the order'], 'answer' => 0],
+                    // Job knowledge: coffeehouse training guides - a ~13 s shot is under-extracted and sour
+                    ['prompt' => 'An espresso shot finishes in about 13 seconds and tastes sour. What is the most likely fix?', 'options' => ['Use a coarser grind', 'Use a finer grind so the water flows more slowly', 'Add more milk', 'Use colder water'], 'answer' => 1],
+                    // Situational judgment: Workable barista interview guide
+                    ['prompt' => 'A customer says you made the wrong drink, but you are sure you made what they ordered. What do you do?', 'options' => ['Show them the receipt to prove you were right', 'Apologize and remake the drink promptly', 'Tell them to order again and pay', 'Ignore the complaint'], 'answer' => 1],
+                    // Situational judgment: Workable barista interview guide
+                    ['prompt' => 'The line is long and the next customer places a complicated order. What is the best approach?', 'options' => ['Skip hygiene steps to go faster', 'Make the simple orders first and leave this one for later', 'Acknowledge waiting customers, keep your standards, and coordinate with teammates to keep the line moving', 'Ask the customer to come back later'], 'answer' => 2],
+                    // Job knowledge: Code on Sanitation (PD 856) - danger zone about 4.44 °C to 60 °C
+                    ['prompt' => 'Perishable food should not be kept for long within which temperature range, where bacteria grow fastest?', 'options' => ['About 5 °C to 60 °C', 'Below 0 °C', 'Above 75 °C', 'Exactly 100 °C'], 'answer' => 0],
+                    // Job knowledge: FDA Philippines food-handler advisory
+                    ['prompt' => 'You wake up with vomiting and diarrhea before your shift. What should you do?', 'options' => ['Go to work and wear gloves', 'Stay home and inform your supervisor', 'Work only at the cashier', 'Take medicine and work as usual'], 'answer' => 1],
+                    // Job knowledge: FIFO stock rotation
+                    ['prompt' => 'Under FIFO stock rotation, which milk should be used first?', 'options' => ['The newest delivery', 'Whichever is closest to the counter', 'The oldest stock that is still within its use-by date', 'The largest container'], 'answer' => 2],
                 ],
             ],
         ]);
@@ -179,11 +264,18 @@ class DatabaseSeeder extends Seeder
             [
                 'title' => 'Clinic Front Desk Essentials', 'role' => 'Clinic Front Desk Receptionist', 'skill' => 'Front Desk',
                 'questions' => [
-                    ['prompt' => 'A patient arrives without an appointment and is in distress. You should...', 'options' => ['Notify clinical staff immediately', 'Tell them to come back tomorrow', 'Take a message', 'Ignore them'], 'answer' => 0],
-                    ['prompt' => 'Patient records must be kept...', 'options' => ['Confidential and secure', 'Posted publicly', 'Shared freely', 'Discarded daily'], 'answer' => 0],
-                    ['prompt' => 'When scheduling, you should confirm the patient\'s...', 'options' => ['Full name and date of birth', 'Favorite color', 'Shoe size', 'Nickname only'], 'answer' => 0],
-                    ['prompt' => '"PHI" in a clinic refers to...', 'options' => ['Protected Health Information', 'Public Health Index', 'Patient Home Isolation', 'Primary Health Insurance'], 'answer' => 0],
-                    ['prompt' => 'A caller asks for another patient\'s results. You should...', 'options' => ['Decline and protect privacy', 'Read them out', 'Email them', 'Confirm the diagnosis'], 'answer' => 0],
+                    // Job knowledge: WHO Patient Safety Solutions - at least two identifiers, never the room number
+                    ['prompt' => 'Before pulling up a patient\'s record, how should you confirm their identity?', 'options' => ['By their room or queue number', 'With at least two identifiers, such as full name and date of birth', 'By how they look', 'By first name only'], 'answer' => 1],
+                    // Job knowledge: Data Privacy Act of 2012 (RA 10173) - health information is sensitive personal information
+                    ['prompt' => 'Under the Data Privacy Act (RA 10173), a patient\'s health information is classified as...', 'options' => ['Public information', 'Sensitive personal information', 'Company property that may be shared freely', 'Marketing data'], 'answer' => 1],
+                    // Situational judgment: confidentiality (RA 10173)
+                    ['prompt' => 'A caller says they are a patient\'s relative and asks for the patient\'s test results. What do you do?', 'options' => ['Read the results to them', 'Decline politely and follow clinic policy for authorized release', 'Email the results to them', 'Confirm the diagnosis only'], 'answer' => 1],
+                    // Situational judgment: patient safety
+                    ['prompt' => 'A walk-in patient without an appointment says they have chest pain and looks unwell. What do you do first?', 'options' => ['Ask them to book an appointment for tomorrow', 'Alert the clinical staff immediately', 'Finish your current phone call first', 'Ask them to fill in all forms before anything else'], 'answer' => 1],
+                    // Situational judgment: Monster receptionist interview guide
+                    ['prompt' => 'A patient is upset about waiting a long time. What is the best response?', 'options' => ['Tell them everyone has to wait', 'Acknowledge their concern, apologize, and give an honest estimate of the wait', 'Move them ahead of everyone else', 'Ignore them until their turn'], 'answer' => 1],
+                    // Situational judgment: scheduling
+                    ['prompt' => 'Two patients were booked in the same slot with the same doctor. What should you do?', 'options' => ['Let them decide who goes first', 'Cancel both appointments', 'Apologize to both, explain the error, and offer each a fair option such as the next available slot or another doctor', 'Say nothing and hope one does not show up'], 'answer' => 2],
                 ],
             ],
         ]);
@@ -191,16 +283,9 @@ class DatabaseSeeder extends Seeder
 
     private function seedApplicants(): void
     {
-        $this->makeApplicant('Maria Santos', 'demo@skillbridge.ph', 'WordPress & Webflow Developer', [
-            ['name' => 'WordPress', 'level' => 94, 'badge' => 'WP Builder', 'verification_status' => 'verified', 'verification_method' => 'assessment'],
-            ['name' => 'Webflow', 'level' => 92, 'badge' => 'Webflow Pro', 'verification_status' => 'verified', 'verification_method' => 'portfolio'],
-            ['name' => 'HTML', 'level' => 90, 'badge' => 'Semantic HTML', 'verification_status' => 'verified', 'verification_method' => 'assessment'],
-            ['name' => 'CSS', 'level' => 88, 'badge' => 'CSS Stylist', 'verification_status' => 'verified', 'verification_method' => 'assessment'],
-            ['name' => 'SEO', 'level' => 86, 'badge' => 'SEO Starter', 'verification_status' => 'verified', 'verification_method' => 'portfolio'],
-            ['name' => 'Figma', 'level' => 82, 'badge' => 'Design Translator', 'verification_status' => 'verified', 'verification_method' => 'portfolio'],
-            ['name' => 'Accessibility', 'level' => 76, 'badge' => 'A11y Ally', 'verification_status' => 'pending', 'verification_method' => 'assessment'],
-            ['name' => 'Analytics', 'level' => 72, 'badge' => 'Insight Tracker', 'verification_status' => 'pending', 'verification_method' => 'scenario'],
-        ], ['WordPress & Webflow Developer', 'Frontend Developer']);
+        $this->makeApplicant('Maria Santos', 'demo@skillbridge.ph', 'WordPress & Webflow Developer',
+            ['WordPress', 'Webflow', 'HTML', 'CSS', 'SEO', 'Figma', 'Accessibility', 'Analytics'],
+            ['WordPress & Webflow Developer', 'Frontend Developer']);
 
         $roster = [
             ['Cleo Ramos', 'Junior Frontend Developer', ['React', 'CSS', 'JavaScript', 'Figma']],
@@ -215,17 +300,291 @@ class DatabaseSeeder extends Seeder
 
         foreach ($roster as [$name, $role, $skills]) {
             $email = strtolower(str_replace(' ', '.', $name)).'@skillbridge.ph';
-            $this->makeApplicant($name, $email, $role, array_map(fn ($skill) => [
-                'name' => $skill,
-                'level' => 85,
-                'badge' => null,
-                'verification_status' => 'verified',
-                'verification_method' => 'assessment',
-            ], $skills), [$role]);
+            $this->makeApplicant($name, $email, $role, $skills, [$role]);
         }
     }
 
-    private function makeApplicant(string $name, string $email, string $headline, array $skills, array $desiredRoles): ApplicantProfile
+    /**
+     * Every demo badge is earned the way the platform grants it (see EarnsBadges):
+     * a passed company assessment, or a company the applicant applied to
+     * confirming a skill its role asks for from an uploaded file. Anything not
+     * earned stays self-reported, so some candidates are Amber on purpose.
+     */
+    private function earnDemoBadges(): void
+    {
+        $profile = fn (string $email) => User::where('email', $email)->firstOrFail()->applicantProfile;
+
+        // Maria: passed NovaByte's WordPress test; NovaByte confirmed the rest from her client-site portfolio.
+        $maria = $profile('demo@skillbridge.ph');
+        $this->earnByAssessment($maria, 'WordPress + Webflow Practical', 92, 21);
+        $sites = $this->evidenceFile($maria, 'portfolio', 'Client websites portfolio', 'maria-santos-client-sites.pdf', [
+            'Client websites portfolio - Maria Santos',
+            'Webflow marketing site for a Davao cafe; responsive HTML/CSS landing pages',
+            'Links and screenshots of three live client projects',
+        ], ['Webflow', 'HTML', 'CSS']);
+        foreach (['Webflow', 'HTML', 'CSS'] as $skill) {
+            $this->earnByEvidence($maria, 'WordPress & Webflow Developer', $skill, $sites, 14);
+        }
+
+        // Cleo: passed the React test; NovaByte confirmed CSS and JavaScript from her portfolio.
+        $cleo = $profile('cleo.ramos@skillbridge.ph');
+        $this->earnByAssessment($cleo, 'React UI Fundamentals', 88, 18);
+        $cleoWork = $this->evidenceFile($cleo, 'portfolio', 'Frontend projects', 'cleo-ramos-projects.pdf', [
+            'Frontend projects - Cleo Ramos', 'Responsive dashboard UI in React with custom CSS', 'Form validation and DOM scripting in JavaScript',
+        ], ['React', 'CSS', 'JavaScript']);
+        foreach (['CSS', 'JavaScript'] as $skill) {
+            $this->earnByEvidence($cleo, 'Junior Frontend Developer', $skill, $cleoWork, 10);
+        }
+        $this->seedLinkedWorkSample($cleo);
+
+        // Miguel: passed the Laravel test; NovaByte confirmed MySQL and REST API from his API project.
+        $miguel = $profile('miguel.santos@skillbridge.ph');
+        $this->earnByAssessment($miguel, 'Laravel API Build', 84, 16);
+        $this->failAssessment($miguel, 'React UI Fundamentals', 45, 12);   // a backend dev trying frontend: 2 attempts left
+        $api = $this->evidenceFile($miguel, 'portfolio', 'Inventory REST API project', 'miguel-santos-api.pdf', [
+            'Inventory REST API - Miguel Santos', 'Laravel REST API endpoints with MySQL migrations and seeders',
+        ], ['Laravel', 'MySQL', 'REST API']);
+        foreach (['MySQL', 'REST API'] as $skill) {
+            $this->earnByEvidence($miguel, 'Junior Laravel Backend Developer', $skill, $api, 9);
+        }
+
+        // Test badges only: these candidates still have self-reported skills (Amber for some roles).
+        $this->earnByAssessment($profile('janelle.cruz@skillbridge.ph'), 'WordPress + Webflow Practical', 80, 12);
+        $liam = $profile('liam.cortez@skillbridge.ph');
+        $this->earnByAssessment($liam, 'Laravel API Build', 90, 25);
+        $this->failAssessment($liam, 'React UI Fundamentals', 60, 23);   // failed first, passed after the cooldown
+        $this->earnByAssessment($liam, 'React UI Fundamentals', 86, 20);
+        $this->failAssessment($profile('noah.lim@skillbridge.ph'), 'React UI Fundamentals', 55, 10);
+        $this->earnByAssessment($profile('noah.lim@skillbridge.ph'), 'React UI Fundamentals', 78, 7);
+        $this->earnByAssessment($profile('bianca.uy@skillbridge.ph'), 'Barista & Cafe Service', 90, 11);
+
+        // Jerome: passed the React test; Quezada Ventures confirmed CSS and JavaScript from his portfolio.
+        $jerome = $profile('jerome.reyes@skillbridge.ph');
+        $this->earnByAssessment($jerome, 'React UI Fundamentals', 94, 15);
+        $jeromeWork = $this->evidenceFile($jerome, 'portfolio', 'UI component library', 'jerome-reyes-components.pdf', [
+            'UI component library - Jerome Reyes', 'Reusable React components styled with CSS modules', 'Accessible JavaScript interactions',
+        ], ['React', 'CSS', 'JavaScript']);
+        foreach (['CSS', 'JavaScript'] as $skill) {
+            $this->earnByEvidence($jerome, 'Junior React Developer', $skill, $jeromeWork, 6);
+        }
+
+        // Marco: passed MediCare's front desk test; MediCare confirmed Customer Service from his training certificate.
+        $marco = $profile('marco.diaz@skillbridge.ph');
+        $this->earnByAssessment($marco, 'Clinic Front Desk Essentials', 86, 13);
+        $training = $this->evidenceFile($marco, 'certificate', 'Patient service training', 'marco-diaz-patient-service.pdf', [
+            'Certificate of Completion - Patient Service and Front Desk Communication', 'Awarded to: Marco Diaz',
+        ], ['Customer Service', 'Front Desk']);
+        $this->earnByEvidence($marco, 'Clinic Front Desk Receptionist', 'Customer Service', $training, 8);
+
+        // Project owner: passed the React test; NovaByte confirmed the rest from the uploaded portfolio.
+        $owner = $profile('jquezada_230000000642@uic.edu.ph');
+        $this->earnByAssessment($owner, 'React UI Fundamentals', 88, 19);
+        $ownerPortfolio = $owner->credentials()->where('type', 'portfolio')->first();
+        if ($ownerPortfolio) {
+            foreach (['CSS', 'JavaScript', 'Figma', 'Git'] as $skill) {
+                $this->earnByEvidence($owner, 'Junior Frontend Developer', $skill, $ownerPortfolio, 5);
+            }
+        }
+    }
+
+    /**
+     * The project owner's own accounts. Kept in the seeder so a migrate:fresh
+     * never wipes them. Skills are chosen to actually match a seeded job, so
+     * the Matches tab has something in it straight away.
+     */
+    private function seedOwnerAccounts(): void
+    {
+        // --- Applicant side -------------------------------------------------
+        $ownerProfile = $this->makeApplicant(
+            'JimNick Quezada',
+            'jquezada_230000000642@uic.edu.ph',
+            'Frontend Developer',
+            // WordPress stays unearned on purpose: the WordPress test is a badge pathway to try.
+            ['React', 'CSS', 'JavaScript', 'Figma', 'Git', 'WordPress'],
+            ['Frontend Developer', 'Junior Frontend Developer']
+        );
+
+        $this->seedOwnerCredentials($ownerProfile);
+
+        // Fig. 6-7 demo: the frontend role asks for its company's React assessment (steps 615-620, 725-730).
+        JobPost::where('title', 'Junior Frontend Developer')->update([
+            'company_assessment_id' => \App\Models\CompanyAssessment::where('title', 'React UI Fundamentals')->value('id'),
+        ]);
+
+        // Apply to a live role so an employer can actually open those documents
+        // (credentials stay private until the applicant applies or is invited).
+        $frontendRole = JobPost::where('title', 'Junior Frontend Developer')->first();
+        if ($frontendRole) {
+            Application::updateOrCreate(
+                ['job_post_id' => $frontendRole->id, 'applicant_profile_id' => $ownerProfile->id],
+                ['status' => 'applied', 'match_score' => 100]
+            );
+        }
+
+        // --- Employer side --------------------------------------------------
+        $employer = $this->makeEmployer('jquezada_230000000642+employer@uic.edu.ph', 'JimNick Quezada', [
+            'company_name' => 'Quezada Ventures',
+            'industry' => 'IT Services & Web Development',
+            'company_size' => '1-10',
+            'location_city' => 'Davao City',
+            'location_region' => 'Davao Region',
+            'recruiter_name' => 'JimNick Quezada',
+            'recruiter_position' => 'Owner',
+            'email_verified' => true,
+        ]);
+
+        // A real role so the employer dashboard is not empty: its required
+        // skills match several seeded applicants, so candidates appear at once.
+        $this->seedJobs($employer, [
+            [
+                'title' => 'Junior React Developer',
+                'location_city' => 'Davao City',
+                'location_region' => 'Davao Region',
+                'salary_range' => 'PHP 20k-26k',
+                'description' => 'Build and maintain React interfaces for client projects.',
+                'responsibilities' => 'Ship React components, fix UI bugs, and keep styling consistent.',
+                'required_skills' => ['React', 'CSS', 'JavaScript'],
+                'preferred_skills' => ['Figma', 'Git'],
+            ],
+        ]);
+    }
+
+    /**
+     * Sample CV + portfolio for the owner's applicant account, written as real
+     * .docx files into private storage and parsed like a genuine upload, so the
+     * employer review screen has documents to open right after a fresh seed.
+     */
+    private function seedOwnerCredentials(ApplicantProfile $profile): void
+    {
+        if (! class_exists(ZipArchive::class)) {
+            $this->command?->warn('zip extension missing - skipped seeding sample credentials.');
+
+            return;
+        }
+
+        $analyzer = app(CredentialAnalyzer::class);
+        Cache::forget('skill-vocabulary');   // parse against freshly seeded skills
+        Storage::disk('local')->makeDirectory('credentials');
+
+        $documents = [
+            [
+                'file' => 'jimnick-quezada-cv.docx',
+                'type' => 'resume',
+                'title' => 'JimNick Quezada - CV',
+                'body' => 'JimNick Quezada. Frontend Developer based in Davao City. '
+                    .'Built responsive interfaces with React, CSS and JavaScript. '
+                    .'Comfortable translating Figma designs and collaborating through Git. '
+                    .'Education: BS Information Technology. Seeking a junior frontend role.',
+            ],
+            [
+                'file' => 'jimnick-quezada-portfolio.docx',
+                'type' => 'portfolio',
+                'title' => 'Frontend Portfolio',
+                'body' => 'Selected work. 1) Campus event site - React and CSS, responsive layout. '
+                    .'2) Small business landing page - JavaScript interactions, Figma handoff. '
+                    .'3) Inventory dashboard UI - reusable React components, Git version control.',
+            ],
+        ];
+
+        foreach ($documents as $doc) {
+            $path = 'credentials/'.$doc['file'];
+            $absolute = Storage::disk('local')->path($path);
+
+            $zip = new ZipArchive();
+            $zip->open($absolute, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+            $zip->addFromString(
+                'word/document.xml',
+                '<w:document><w:body><w:p><w:r><w:t>'.$doc['body'].'</w:t></w:r></w:p></w:body></w:document>'
+            );
+            $zip->close();
+
+            $text = $analyzer->text($absolute, null);
+
+            Credential::updateOrCreate(
+                ['applicant_profile_id' => $profile->id, 'original_name' => $doc['file']],
+                [
+                    'type' => $doc['type'],
+                    'title' => $doc['title'],
+                    'path' => $path,
+                    'mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'size' => filesize($absolute),
+                    'sha256' => hash_file('sha256', $absolute),
+                    'meta' => ['extension' => 'docx', 'source' => 'seeded sample'],
+                    'extracted_skills' => $analyzer->skillsIn($text),
+                ]
+            );
+        }
+    }
+
+    /**
+     * Demo admin plus one item in each admin queue: a company waiting for its
+     * DTI check, and a TESDA certificate waiting for its registry check. The
+     * certificate number is invented, so the honest outcome in a demo is
+     * "not found in the registry" - which shows how a fake certificate is caught.
+     */
+    private function seedVerificationQueue(): void
+    {
+        User::updateOrCreate(['email' => 'admin@skillbridge.ph'], [
+            'name' => 'SkillBridge Admin', 'first_name' => 'SkillBridge', 'surname' => 'Admin',
+            'role' => 'admin', 'password' => Hash::make('password123'),
+        ])->forceFill(['email_verified_at' => now()])->save();
+
+        $brightBuild = $this->makeEmployer('hr@brightbuild.ph', 'Rafael Mendoza', [
+            'company_name' => 'BrightBuild Construction',
+            'industry' => 'Construction',
+            'company_size' => '11-50',
+            'location_city' => 'Davao City',
+            'location_region' => 'Davao Region',
+            'recruiter_name' => 'Rafael Mendoza',
+            'recruiter_position' => 'HR Officer',
+            'recruiter_contact' => 'hr@brightbuild.ph',
+            'registration_type' => 'DTI',
+            'registration_number' => 'DEMO-1234567',
+            'verification_status' => 'pending',
+            'verification_note' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
+            'email_verified' => false,
+        ]);
+        // A sample permit, then the same automatic pre-check a real submission gets (Fig. 5, step 530).
+        Storage::disk('local')->put('permits/demo-brightbuild-permit.pdf', $this->pdf([
+            'SAMPLE DOCUMENT - seeded demo data',
+            'Certificate of Business Name Registration',
+            'Business Name: BRIGHTBUILD CONSTRUCTION',
+            'Business Name No.: DEMO-1234567',
+        ]));
+        $brightBuild->update(['business_permit_path' => 'permits/demo-brightbuild-permit.pdf']);
+        $brightBuild->update(['precheck' => app(\App\Services\CompanyPreCheck::class)->run($brightBuild), 'precheck_at' => now()]);
+
+        $bianca = User::where('email', 'bianca.uy@skillbridge.ph')->first()?->applicantProfile;
+        if (! $bianca || ! class_exists(ZipArchive::class)) {
+            return;
+        }
+        Storage::disk('local')->makeDirectory('credentials');
+        $path = 'credentials/bianca-uy-tesda-nc2.docx';
+        $absolute = Storage::disk('local')->path($path);
+        $zip = new ZipArchive();
+        $zip->open($absolute, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('word/document.xml', '<w:document><w:body><w:p><w:r><w:t>'
+            .'National Certificate II - Barista. Holder: Bianca Uy. Certificate No. 1234 5678 9012 3456 (demo).'
+            .'</w:t></w:r></w:p></w:body></w:document>');
+        $zip->close();
+
+        Credential::updateOrCreate(
+            ['applicant_profile_id' => $bianca->id, 'original_name' => 'bianca-uy-tesda-nc2.docx'],
+            [
+                'type' => 'certificate', 'title' => 'TESDA Barista NC II', 'path' => $path,
+                'mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'size' => filesize($absolute), 'sha256' => hash_file('sha256', $absolute),
+                'meta' => ['extension' => 'docx', 'source' => 'seeded sample'],
+                'registry' => 'tesda', 'registry_number' => '1234567890123456',
+                'registry_qualification' => 'Barista NC II', 'registry_status' => 'pending',
+                'registry_note' => null, 'registry_checked_by' => null, 'registry_checked_at' => null,
+            ]
+        );
+    }
+
+    private function makeApplicant(string $name, string $email, string $headline, array $skillNames, array $desiredRoles): ApplicantProfile
     {
         $parts = explode(' ', $name);
         $user = User::updateOrCreate(
@@ -238,6 +597,7 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('password123'),
             ]
         );
+        $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save(); // seeded: no inbox to confirm
 
         $profile = ApplicantProfile::updateOrCreate(
             ['user_id' => $user->id],
@@ -249,10 +609,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $profile->skills()->delete();
-        foreach ($skills as $skill) {
-            $profile->skills()->create($skill);
-        }
+        $this->claimSkills($profile, $skillNames);
 
         return $profile;
     }

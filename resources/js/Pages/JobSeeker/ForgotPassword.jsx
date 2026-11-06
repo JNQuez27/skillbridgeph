@@ -1,43 +1,38 @@
-import { useMemo, useState } from "react";
+import { useForm, usePage } from "@inertiajs/react";
 import AuthLayout from "./components/layout/AuthLayout";
 import Input from "./components/ui/Input";
 import Button from "./components/ui/Button";
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const { props } = usePage();
+  const { data, setData, post, processing, errors } = useForm({ email: "" });
 
-  const isValid = useMemo(() => emailRegex.test(email), [email]);
+  const submit = (event) => {
+    event.preventDefault();
+    post("/forgot-password", { preserveScroll: true });
+  };
 
   return (
     <AuthLayout
       title="Reset your password"
       subtitle="Enter your email and we will send a reset link."
     >
-      <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
+      <form className="flex flex-col gap-4" onSubmit={submit}>
+        {props.flash?.success && (
+          <div role="status" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{props.flash.success}</div>
+        )}
         <Input
           id="forgot-email"
           label="Email"
           type="email"
           placeholder="you@email.com"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          value={data.email}
+          onChange={(event) => setData("email", event.target.value)}
+          error={errors.email}
         />
-        <Button
-          type="button"
-          className="w-full"
-          disabled={!isValid}
-          onClick={() => setSubmitted(true)}
-        >
+        <Button type="submit" className="w-full" loading={processing} disabled={processing || !data.email}>
           Send reset link
         </Button>
-        {submitted && (
-          <div className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
-            Reset link sent.
-          </div>
-        )}
         <p className="text-center text-xs text-slate-500">
           Remembered your password?{" "}
           <a className="font-semibold text-sky-700 hover:text-sky-800" href="/login">

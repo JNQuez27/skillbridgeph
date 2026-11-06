@@ -1,31 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-
-// Local palette for the public dashboard ONLY (Job Board / Recruitment scheme
-// from ui-ux-pro-max: professional blue + verified green, WCAG-tuned).
-// theme.js and the shared header are intentionally left untouched.
-const COLORS = {
-  parchment: "#F0F9FF",     // page background
-  parchmentDark: "#E0F2FE", // deeper background band
-  parchmentDeep: "#BAE6FD", // borders / hairlines
-  cream: "#FFFFFF",         // cards / surfaces
-  brownDeep: "#0C4A6E",     // deep brand blue — titles, dark buttons, avatars
-  brownMid: "#075985",      // strong blue
-  brownLight: "#0369A1",    // primary blue
-  brownWarm: "#0EA5E9",     // secondary sky blue
-  rust: "#0369A1",          // eyebrow/badge accent → primary blue
-  rustLight: "#0EA5E9",
-  rustBright: "#38BDF8",
-  gold: "#16A34A",          // verified / success accent (green)
-  goldLight: "#4ADE80",     // positive metric numbers on dark
-  tan: "#BAE6FD",
-  textDark: "#0C4A6E",      // foreground
-  textMid: "#075985",
-  textLight: "#64748B",     // muted foreground
-  success: "#16A34A",
-  successLight: "#22C55E",
-  info: "#0369A1",
-  infoLight: "#0EA5E9",
-};
+import { COLORS } from "../styles/ui";
 
 // Scroll-reveal wrapper: fades + slides content into view as it enters the
 // viewport (HopeRise-style). Honors reduced-motion and reveals only once.
@@ -91,6 +65,7 @@ const dashboardStyles = `
 
 const styles = {
   page: {
+    overflowX: "clip",
     display: "flex",
     flexDirection: "column",
     gap: "0",
@@ -160,7 +135,7 @@ const styles = {
     border: "none",
     borderRadius: "999px",
     padding: "12px 20px",
-    background: `linear-gradient(90deg, ${COLORS.success}, ${COLORS.successLight})`,
+    background: `linear-gradient(90deg, ${COLORS.success}, #166534)`,
     color: COLORS.cream,
     fontSize: "13px",
     fontWeight: 700,
@@ -191,7 +166,7 @@ const styles = {
     border: `1px solid ${COLORS.parchmentDeep}`,
     background: COLORS.cream,
     color: COLORS.textMid,
-    fontSize: "11px",
+    fontSize: "13px",
     fontWeight: 600,
   },
   heroProfileWrap: {
@@ -235,7 +210,7 @@ const styles = {
     borderRadius: "999px",
     background: "rgba(3,105,161,0.10)",
     border: "1px solid rgba(3,105,161,0.24)",
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: "0.32em",
     textTransform: "uppercase",
@@ -317,11 +292,11 @@ const styles = {
     borderRadius: "999px",
     background: COLORS.brownDeep,
     color: COLORS.cream,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 700,
   },
   jobMatch: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     color: COLORS.success,
   },
@@ -501,7 +476,7 @@ const styles = {
     borderRadius: "18px",
     padding: "20px",
     border: `1px solid ${COLORS.parchmentDeep}`,
-    background: `linear-gradient(135deg, ${COLORS.success} 0%, ${COLORS.successLight} 100%)`,
+    background: `linear-gradient(135deg, ${COLORS.success} 0%, #166534 100%)`,
     color: COLORS.cream,
     display: "grid",
     gap: "10px",
@@ -553,118 +528,43 @@ const styles = {
     margin: 0,
   },
   footerLink: {
-    fontSize: 12,
-    color: "rgba(253,246,232,0.7)",
-  },
-  footerSocialRow: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap",
-  },
-  socialBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: "50%",
-    background: "rgba(253,246,232,0.12)",
-    color: COLORS.cream,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 12,
-    fontWeight: 700,
-  },
-  appButtonRow: {
-    display: "grid",
-    gap: "10px",
-  },
-  appButton: {
-    border: "1px solid rgba(253,246,232,0.2)",
-    borderRadius: "999px",
-    padding: "8px 14px",
-    color: COLORS.cream,
-    background: "rgba(253,246,232,0.08)",
-    fontSize: 12,
-    fontWeight: 600,
-    textAlign: "center",
-  },
-  paymentRow: {
-    display: "grid",
-    gap: "12px",
-  },
-  paymentList: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-  },
-  paymentPill: {
-    padding: "6px 10px",
-    borderRadius: "999px",
-    background: "rgba(253,246,232,0.12)",
-    color: COLORS.cream,
-    fontSize: 11,
-    fontWeight: 600,
+    fontSize: 13,
+    color: "rgba(253,246,232,0.8)",
+    textDecoration: "none",
+    padding: "12px 0",
   },
   footerBottom: {
-    fontSize: 11,
+    fontSize: 12,
     color: "rgba(253,246,232,0.6)",
     textAlign: "center",
   },
 };
 
-const globalStats = [
-  { label: "Active job posts", value: "4,812", detail: "Across SMEs and enterprise" },
-  { label: "Verified skill badges", value: "18,420", detail: "Assessments completed" },
-  { label: "Hiring locations", value: "142", detail: "Nationwide coverage" },
-  { label: "Daily matches", value: "1,250", detail: "Personalized signals" },
-  { label: "Top industries", value: "24", detail: "Retail, services, creatives" },
-  { label: "Average response", value: "36 hrs", detail: "From employer reply" },
-];
-
+// Patent Fig. 9 (924-928): the idea in three steps.
 const howSteps = [
   {
-    title: "Create a verified profile",
-    description: "Build your skill-based identity with assessments and portfolio evidence.",
+    title: "Take an assessment",
+    description: "Pick a skill you claimed and prove it with a timed, task-based assessment from a verified company.",
   },
   {
-    title: "Match to real demand",
-    description: "See roles aligned with your verified skills, location, and availability.",
+    title: "Earn a badge",
+    description: "Pass and the skill becomes a verified badge with your score, the date, and a unique verification ID.",
   },
   {
-    title: "Apply and track",
-    description: "Use one-tap applications and track employer responses in real time.",
+    title: "Get matched",
+    description: "Employers rank candidates by verified proof, so your badges put you in front of the right roles.",
   },
-  {
-    title: "Hire with confidence",
-    description: "Employers review verified signals instead of guessing from resumes.",
-  },
-];
-
-const jobCards = [
-  { title: "Customer Service Associate", company: "MetroMarket", location: "Quezon City", tag: "Full-time", match: "92% match" },
-  { title: "Retail Sales Assistant", company: "Harbor Mart", location: "Taguig City", tag: "On-site", match: "88% match" },
-  { title: "Virtual Assistant", company: "TaskBridge Partners", location: "Remote", tag: "Remote", match: "86% match" },
-  { title: "Graphic Designer", company: "Luna Creative", location: "Remote", tag: "Contract", match: "84% match" },
-  { title: "Barista", company: "Sunrise Coffee", location: "Makati", tag: "Full-time", match: "81% match" },
-  { title: "Inventory Clerk", company: "BrightMart", location: "Pasig", tag: "On-site", match: "79% match" },
-];
-
-const categoryCards = [
-  { title: "Frontline Service", meta: "128 open roles", icon: "FS" },
-  { title: "Retail Operations", meta: "94 open roles", icon: "RO" },
-  { title: "Creative Support", meta: "76 open roles", icon: "CS" },
-  { title: "Admin & VA", meta: "112 open roles", icon: "VA" },
-  { title: "Food & Beverage", meta: "67 open roles", icon: "FB" },
-  { title: "Entry-level IT", meta: "59 open roles", icon: "IT" },
 ];
 
 const employerFeatures = [
-  "Post roles with required skill badges and immediate scoring.",
-  "Filter by verified level, location, and availability status.",
-  "See applicant readiness summaries and recent activity.",
-  "Shortlist and message candidates without leaving the dashboard.",
-  "Track time-to-hire and pipeline health in real time.",
+  "Post roles with required and preferred skills; matching candidates are ranked automatically.",
+  "See each candidate's Green / Amber / Red check, with the reason behind every flag.",
+  "Open applicants' CVs, certificates, and demo videos privately.",
+  "Create timed assessments that award verified skill badges.",
+  "Invite, shortlist, and hire, with every hiring decision recorded.",
 ];
 
+// Placeholder quotes until real users can be asked; labelled as samples on the page.
 const testimonials = [
   {
     quote: "We hired three entry-level associates in one week using verified badges.",
@@ -672,7 +572,7 @@ const testimonials = [
     role: "HR Lead, retail chain",
   },
   {
-    quote: "The public dashboard helped me see where my skills were trending before I applied.",
+    quote: "Seeing which of my skills were verified told me exactly what to work on before applying.",
     name: "Ken R.",
     role: "Fresh graduate, IT support",
   },
@@ -685,44 +585,61 @@ const testimonials = [
 
 const faqs = [
   {
-    question: "Do I need an account to browse public insights?",
-    answer: "No. The public dashboard shows open data. Sign up to unlock personalized matches and applications.",
+    question: "Do I need an account to browse?",
+    answer: "No. This page shows the live open roles and counts. Sign up to get matched to roles and apply.",
   },
   {
     question: "How are skills verified?",
-    answer: "Skills are validated with short task assessments and peer-reviewed evidence checks.",
+    answer: "Two ways, and every badge shows which one and who issued it: passing a timed assessment from a verified employer, or a verified employer reviewing your uploaded portfolio, certificate, or demo video and confirming the skill.",
   },
   {
-    question: "Can employers filter applicants by location?",
-    answer: "Yes. Location, verified skill levels, and availability are all filterable once logged in.",
+    question: "Does location affect matching?",
+    answer: "Yes. Location is part of the match score, together with required skills, preferred skills, and experience level.",
   },
   {
     question: "Is SkillBridge PH only for tech roles?",
-    answer: "No. The platform focuses on frontline, service, retail, creative, and early-career roles.",
+    answer: "No. Employers in any industry can post roles and define the skills they require.",
   },
 ];
 
 const faqCtas = [
   {
     title: "Do you want to hire verified talent?",
-    text: "Create employer access and start shortlisting in minutes.",
+    text: "Create an employer account and post your first role.",
     action: "Post a job",
+    href: "/signup?role=employer",
     tone: "light",
   },
   {
     title: "Do you want to find work faster?",
     text: "Build your verified profile and start matching today.",
     action: "Find roles",
+    href: "/signup",
     tone: "accent",
   },
 ];
 
-const footerLinks = ["Home", "Insights", "Employers", "Community", "Resources", "FAQs", "Contact"];
-const footerCategories = ["Frontline Service", "Retail", "Creative", "Admin & VA", "Food & Beverage", "Entry-level IT"];
-const socialLinks = ["FB", "IG", "IN", "X"];
-const paymentMethods = ["PayMaya", "GCash", "Visa", "Mastercard", "PayPal", "UnionBank"];
+const footerLinks = [
+  { label: "Home", href: "#home" },
+  { label: "How it works", href: "#process" },
+  { label: "Industries", href: "#industry" },
+  { label: "For employers", href: "#benefit" },
+  { label: "FAQs", href: "#faqs" },
+];
 
-export default function GeneralDashboard() {
+const initials = (text) => text.split(/[\s&]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
+export default function GeneralDashboard({ landing }) {
+  const stats = landing?.stats || {};
+  const jobs = landing?.jobs || [];
+  const industries = landing?.industries || [];
+  const topSkills = landing?.topSkills || [];
+  const heroStats = [
+    { label: "Open roles", value: stats.openJobs ?? 0 },
+    { label: "Verified skill badges", value: stats.verifiedBadges ?? 0 },
+    { label: "Verified employers", value: stats.verifiedEmployers ?? 0 },
+  ];
+
   return (
     <div style={styles.page}>
       <style>{dashboardStyles}</style>
@@ -737,7 +654,7 @@ export default function GeneralDashboard() {
               </p>
               <div style={styles.heroActions}>
                 <button style={styles.primaryButton} onClick={() => window.location.href = "/login"}>Start exploring</button>
-                <button style={styles.ghostButton} onClick={() => window.location.href = "/signup"}>
+                <button style={styles.ghostButton} onClick={() => document.getElementById("process")?.scrollIntoView({ behavior: "smooth" })}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: COLORS.brownDeep, color: COLORS.cream, fontSize: 12 }}>
                     ▶
                   </span>
@@ -745,9 +662,9 @@ export default function GeneralDashboard() {
                 </button>
               </div>
               <div style={styles.heroStatRow}>
-                {globalStats.slice(0, 3).map((stat) => (
+                {heroStats.map((stat) => (
                   <div key={stat.label} style={styles.heroStatPill}>
-                    <span style={{ fontWeight: 700, color: COLORS.brownDeep }}>{stat.value}</span>
+                    <span style={{ fontWeight: 700, color: COLORS.brownDeep }}>{stat.value.toLocaleString()}</span>
                     <span style={{ marginLeft: 6 }}>{stat.label}</span>
                   </div>
                 ))}
@@ -788,17 +705,21 @@ export default function GeneralDashboard() {
             </div>
           </Reveal>
           <div style={styles.jobGrid}>
-            {jobCards.map((job, index) => (
-              <Reveal key={job.title} style={styles.jobCard} className="sbph-lift" delay={index * 90}>
+            {jobs.length === 0 && <p style={styles.sectionText}>No open roles yet. New employer posts appear here.</p>}
+            {jobs.map((job, index) => (
+              <Reveal key={job.id} style={styles.jobCard} className="sbph-lift" delay={index * 90}>
                 <div style={styles.jobCardTop}>
                   <span style={styles.jobTag}>{job.tag}</span>
-                  <span style={styles.jobMatch}>{job.match}</span>
+                  <span style={styles.jobMatch}>{job.skills} skill{job.skills === 1 ? "" : "s"} required</span>
                 </div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.textDark }}>{job.title}</div>
                 <div style={styles.jobMeta}>{job.company}</div>
                 <div style={styles.jobMeta}>{job.location}</div>
               </Reveal>
             ))}
+            {jobs.length > 0 && (
+              <a href="/jobs" style={{ ...styles.ghostButton, justifySelf: "start", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Browse all open jobs</a>
+            )}
           </div>
         </div>
       </section>
@@ -812,11 +733,11 @@ export default function GeneralDashboard() {
           </p>
         </Reveal>
         <div style={styles.categoryGrid}>
-          {categoryCards.map((category, index) => (
+          {industries.map((category, index) => (
             <Reveal key={category.title} style={styles.categoryCard} className="sbph-category-card" delay={index * 90}>
-              <div style={styles.categoryIcon}>{category.icon}</div>
+              <div style={styles.categoryIcon}>{initials(category.title)}</div>
               <div style={styles.categoryTitle}>{category.title}</div>
-              <div style={styles.categoryMeta}>{category.meta}</div>
+              <div style={styles.categoryMeta}>{category.openRoles} open role{category.openRoles === 1 ? "" : "s"}</div>
             </Reveal>
           ))}
         </div>
@@ -827,30 +748,30 @@ export default function GeneralDashboard() {
           <Reveal style={styles.employerVisual} from="left">
             <div style={styles.employerHeader}>
               <span>Employer dashboard</span>
-              <span>Live pipeline</span>
+              <span>Live across the platform</span>
             </div>
             <div style={styles.employerCard}>
-              <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>Active roles</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.goldLight }}>24</div>
-              <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>Verified applicants this week</div>
+              <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>Open roles</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.goldLight }}>{stats.openJobs ?? 0}</div>
+              <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>{stats.verifiedApplicants ?? 0} applicants with a verified skill</div>
             </div>
             <div style={styles.employerMetricRow}>
               {[
-                { label: "Shortlisted", value: "38" },
-                { label: "Interviews", value: "12" },
-                { label: "Offers", value: "5" },
+                { label: "Shortlisted", value: stats.shortlisted ?? 0 },
+                { label: "Interviewing", value: stats.interviewing ?? 0 },
+                { label: "Hired", value: stats.hired ?? 0 },
               ].map((item) => (
                 <div key={item.label} style={styles.employerMetricCard}>
                   <div style={styles.employerMetricValue}>{item.value}</div>
-                  <div style={{ fontSize: 11, color: "rgba(253,246,232,0.7)" }}>{item.label}</div>
+                  <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>{item.label}</div>
                 </div>
               ))}
             </div>
             <div style={styles.employerCard}>
-              <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>Top verified skills</div>
+              <div style={{ fontSize: 12, color: "rgba(253,246,232,0.7)" }}>Most requested skills</div>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {["Customer Service", "Scheduling", "Sales", "Inventory"].map((skill) => (
-                  <span key={skill} style={{ padding: "4px 8px", borderRadius: "999px", border: "1px solid rgba(253,246,232,0.2)", fontSize: 10 }}>
+                {topSkills.map((skill) => (
+                  <span key={skill} style={{ padding: "4px 8px", borderRadius: "999px", border: "1px solid rgba(253,246,232,0.2)", fontSize: 12 }}>
                     {skill}
                   </span>
                 ))}
@@ -871,7 +792,7 @@ export default function GeneralDashboard() {
                 </li>
               ))}
             </ul>
-            <button style={styles.primaryButton} onClick={() => window.location.href = "/signup"}>Post a job</button>
+            <button style={styles.primaryButton} onClick={() => window.location.href = "/signup?role=employer"}>Post a job</button>
           </Reveal>
         </div>
       </section>
@@ -881,7 +802,7 @@ export default function GeneralDashboard() {
           <span style={styles.sectionBadge}>Testimonials</span>
           <h2 style={styles.sectionTitle}>What teams and candidates say</h2>
           <p style={styles.sectionText}>
-            Real feedback from employers and applicants using SkillBridge PH.
+            Sample testimonials, shown as placeholders until real users share their feedback.
           </p>
         </Reveal>
         <div style={styles.testimonialGrid}>
@@ -891,7 +812,7 @@ export default function GeneralDashboard() {
                 "{item.quote}"
               </p>
               <p style={{ margin: 0, fontSize: 12, color: COLORS.textLight }}>{item.name}</p>
-              <p style={{ margin: 0, fontSize: 11, color: COLORS.textMid }}>{item.role}</p>
+              <p style={{ margin: 0, fontSize: 12, color: COLORS.textMid }}>{item.role}</p>
             </Reveal>
           ))}
         </div>
@@ -922,7 +843,7 @@ export default function GeneralDashboard() {
               <Reveal key={cta.title} style={cta.tone === "accent" ? styles.ctaCardAlt : styles.ctaCard} className="sbph-lift" from="right" delay={index * 120}>
                 <h3 style={styles.ctaTitle}>{cta.title}</h3>
                 <p style={styles.ctaText}>{cta.text}</p>
-                <button style={styles.ctaButton}>{cta.action}</button>
+                <button style={styles.ctaButton} onClick={() => window.location.href = cta.href}>{cta.action}</button>
               </Reveal>
             ))}
           </div>
@@ -936,43 +857,27 @@ export default function GeneralDashboard() {
             <p style={styles.footerText}>
               A verified hiring platform connecting applicants and employers through proof-based skills.
             </p>
-            <div style={styles.footerSocialRow}>
-              {socialLinks.map((social) => (
-                <span key={social} style={styles.socialBadge}>{social}</span>
-              ))}
-            </div>
           </Reveal>
           <Reveal style={styles.heroColumn} delay={90}>
-            <h3 style={styles.footerTitle}>Company info</h3>
+            <h3 style={styles.footerTitle}>Explore</h3>
             {footerLinks.map((link) => (
-              <span key={link} style={styles.footerLink} className="sbph-footer-link">{link}</span>
+              <a key={link.label} href={link.href} style={styles.footerLink} className="sbph-footer-link">{link.label}</a>
             ))}
           </Reveal>
           <Reveal style={styles.heroColumn} delay={180}>
-            <h3 style={styles.footerTitle}>Top categories</h3>
-            {footerCategories.map((category) => (
-              <span key={category} style={styles.footerLink} className="sbph-footer-link">{category}</span>
+            <h3 style={styles.footerTitle}>Industries hiring</h3>
+            {industries.map((category) => (
+              <a key={category.title} href="#industry" style={styles.footerLink} className="sbph-footer-link">{category.title}</a>
             ))}
           </Reveal>
           <Reveal style={styles.heroColumn} delay={270}>
-            <h3 style={styles.footerTitle}>Download the app</h3>
-            <p style={styles.footerText}>Quezon City, Philippines</p>
-            <p style={styles.footerText}>+63 917 123 4567</p>
-            {/* <div style={styles.appButtonRow}>
-              <span style={styles.appButton}>Get it on Google Play</span>
-              <span style={styles.appButton}>Download on the App Store</span>
-            </div> */}
+            <h3 style={styles.footerTitle}>Get started</h3>
+            <a href="/signup" style={styles.footerLink} className="sbph-footer-link">Create an applicant account</a>
+            <a href="/signup?role=employer" style={styles.footerLink} className="sbph-footer-link">Create an employer account</a>
+            <a href="/login" style={styles.footerLink} className="sbph-footer-link">Log in</a>
           </Reveal>
         </div>
         <div style={{ height: 1, background: "rgba(253,246,232,0.14)" }} />
-        <div style={styles.paymentRow}>
-          <h3 style={styles.footerTitle}>We Accept Payment Gateway</h3>
-          <div style={styles.paymentList}>
-            {paymentMethods.map((method) => (
-              <span key={method} style={styles.paymentPill}>{method}</span>
-            ))}
-          </div>
-        </div>
         <div style={styles.footerBottom}>© 2026 SkillBridge PH. All rights reserved.</div>
       </footer>
     </div>
