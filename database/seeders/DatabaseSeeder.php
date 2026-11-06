@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
                 'name' => $name,
                 'first_name' => explode(' ', $name)[0],
                 'role' => 'employer',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make(env('DEMO_PASSWORD', 'password123')),
             ]
         );
         $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save(); // seeded: no inbox to confirm
@@ -526,7 +526,7 @@ class DatabaseSeeder extends Seeder
     {
         User::updateOrCreate(['email' => 'admin@skillbridge.ph'], [
             'name' => 'SkillBridge Admin', 'first_name' => 'SkillBridge', 'surname' => 'Admin',
-            'role' => 'admin', 'password' => Hash::make('password123'),
+            'role' => 'admin', 'password' => Hash::make(env('DEMO_PASSWORD', 'password123')),
         ])->forceFill(['email_verified_at' => now()])->save();
 
         $brightBuild = $this->makeEmployer('hr@brightbuild.ph', 'Rafael Mendoza', [
@@ -594,7 +594,7 @@ class DatabaseSeeder extends Seeder
                 'first_name' => $parts[0] ?? $name,
                 'surname' => $parts[count($parts) - 1] ?? '',
                 'role' => 'jobseeker',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make(env('DEMO_PASSWORD', 'password123')),
             ]
         );
         $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save(); // seeded: no inbox to confirm

@@ -1,0 +1,61 @@
+# Render Blueprint: Dashboard > New > Blueprint > pick this repository.
+# Render asks for the two secrets marked "sync: false" when the Blueprint is created.
+#
+#   APP_KEY        run `php artisan key:generate --show` locally and paste the output
+#   DEMO_PASSWORD  the password for the demo accounts (admin@skillbridge.ph, ...)
+#
+# Free plan limits: the service sleeps after ~15 idle minutes (first visit then
+# takes about a minute), the free database expires after 30 days, and there is no
+# persistent disk, so uploaded files are lost on every restart or redeploy.
+# For uploads that survive, switch the web service to a paid plan and add the
+# disk block below.
+
+services:
+  - type: web
+    name: skillbridgeph
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: PORT                 # nginx in the image listens on 8080
+        value: "8080"
+      - key: APP_NAME
+        value: SkillBridge PH
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: SEED_DEMO             # demo data on first start, into an empty database only
+        value: "true"
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: skillbridgeph-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: file
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: file
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: MAIL_MAILER          # emails go to the log until real SMTP is configured
+        value: log
+    # disk:                        # paid plans only
+    #   name: uploads
+    #   mountPath: /var/www/storage/app
+    #   sizeGB: 1
+
+databases:
+  - name: skillbridgeph-db
+    plan: free
+    databaseName: skillbridge
+    user: skillbridge

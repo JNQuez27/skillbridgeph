@@ -3,6 +3,17 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
+// Hosts without a shell (Render free plan): seed the demo data on start, but only
+// into an empty database, so a restart or redeploy never wipes real accounts.
+Artisan::command('demo:seed-if-empty', function () {
+    if (\App\Models\User::exists()) {
+        $this->info('Database already has accounts; demo seed skipped.');
+
+        return 0;
+    }
+    $this->call('db:seed', ['--force' => true]);
+})->purpose('Seed the demo data only when the database has no users');
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');

@@ -52,7 +52,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    // Render provides RENDER_EXTERNAL_URL; an explicit APP_URL still wins.
+    'url' => env('APP_URL', env('RENDER_EXTERNAL_URL', 'http://localhost')),
 
     /*
     |--------------------------------------------------------------------------
