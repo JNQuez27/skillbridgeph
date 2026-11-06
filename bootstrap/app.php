@@ -11,11 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Behind a host's load balancer (Render): trust forwarded headers only from
-        // private-network proxies, so the real visitor IP (login throttle, /verify
-        // throttle) cannot be faked with an X-Forwarded-For header from outside.
-        // 100.64.0.0/10 is the shared range cloud load balancers use internally.
-        $middleware->trustProxies(at: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10', '127.0.0.1']);
+        // Behind a host's TLS proxy (Render): take the scheme, host and port from the
+        // proxy so redirects stay on https://. X-Forwarded-For is deliberately NOT
+        // trusted: it is client-controlled, and the login and /verify throttles key
+        // on the IP. Those headers only change how this request's own links are built.
+        // ponytail: throttles see the proxy's IP, not the visitor's; trust the host's
+        // published proxy IPs for X-Forwarded-For if per-visitor limits matter.
+        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
+            | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
+            | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT);
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
