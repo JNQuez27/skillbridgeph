@@ -21,6 +21,54 @@ class DatabaseSeeder extends Seeder
 {
     use EarnsBadges;
 
+    private const DEMO_PERMIT = [
+        'SAMPLE DOCUMENT - seeded demo data',
+        'Certificate of Business Name Registration',
+        'Business Name: BRIGHTBUILD CONSTRUCTION',
+        'Business Name No.: DEMO-1234567',
+    ];
+
+    /**
+     * Render's free plan wipes storage/ on every restart, but the database keeps
+     * pointing at the seeded demo files. Write back any that are missing (as sample
+     * documents) so the admin and employer screens never 404 in a demo. Files real
+     * users uploaded are not touched: they need a persistent disk.
+     */
+    public function restoreDemoFiles(): int
+    {
+        $disk = Storage::disk('local');
+        $restored = 0;
+
+        foreach (EmployerProfile::where('business_permit_path', 'like', 'permits/demo-%')->get() as $company) {
+            if (! $disk->exists($company->business_permit_path)) {
+                $disk->put($company->business_permit_path, $this->pdf(self::DEMO_PERMIT));
+                $restored++;
+            }
+        }
+
+        foreach (Credential::all() as $credential) {
+            $meta = $credential->meta ?? [];
+            $seeded = ($meta['source'] ?? null) === 'seeded sample' || ($meta['producer'] ?? null) === 'SkillBridge PH seed';
+            if (! $seeded || $disk->exists($credential->path)) {
+                continue;
+            }
+            $lines = ['SAMPLE DOCUMENT - seeded demo data', $credential->title];
+            if (str_ends_with($credential->path, '.pdf')) {
+                $disk->put($credential->path, $this->pdf($lines));
+            } else {
+                $disk->makeDirectory(dirname($credential->path));
+                $zip = new ZipArchive();
+                $zip->open($disk->path($credential->path), ZipArchive::CREATE | ZipArchive::OVERWRITE);
+                $zip->addFromString('word/document.xml', '<w:document><w:body><w:p><w:r><w:t>'
+                    .htmlspecialchars(implode('. ', $lines)).'</w:t></w:r></w:p></w:body></w:document>');
+                $zip->close();
+            }
+            $restored++;
+        }
+
+        return $restored;
+    }
+
     public function run(): void
     {
         // Demo data is not a real status change: send no application notifications.
@@ -547,12 +595,7 @@ class DatabaseSeeder extends Seeder
             'email_verified' => false,
         ]);
         // A sample permit, then the same automatic pre-check a real submission gets (Fig. 5, step 530).
-        Storage::disk('local')->put('permits/demo-brightbuild-permit.pdf', $this->pdf([
-            'SAMPLE DOCUMENT - seeded demo data',
-            'Certificate of Business Name Registration',
-            'Business Name: BRIGHTBUILD CONSTRUCTION',
-            'Business Name No.: DEMO-1234567',
-        ]));
+        Storage::disk('local')->put('permits/demo-brightbuild-permit.pdf', $this->pdf(self::DEMO_PERMIT));
         $brightBuild->update(['business_permit_path' => 'permits/demo-brightbuild-permit.pdf']);
         $brightBuild->update(['precheck' => app(\App\Services\CompanyPreCheck::class)->run($brightBuild), 'precheck_at' => now()]);
 

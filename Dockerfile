@@ -48,5 +48,6 @@ EXPOSE 8080
 # Migrations only - seeders are never run automatically. Migrate runs as root,
 # so anything it writes under storage/ is handed back to www-data before PHP-FPM
 # starts; otherwise a root-owned log or cache file causes permission errors later.
-# With SEED_DEMO=true (Render), an empty database gets the demo data once.
-CMD ["sh", "-c", "php artisan migrate --force --no-interaction && if [ \"$SEED_DEMO\" = \"true\" ]; then php artisan demo:seed-if-empty; fi && chown -R www-data:www-data storage bootstrap/cache && exec /usr/bin/supervisord -c /etc/supervisord.conf"]
+# With SEED_DEMO=true (Render), an empty database gets the demo data once, and
+# seeded demo files wiped by a restart are written back.
+CMD ["sh", "-c", "php artisan migrate --force --no-interaction && if [ \"$SEED_DEMO\" = \"true\" ]; then php artisan demo:seed-if-empty && php artisan demo:restore-files; fi && chown -R www-data:www-data storage bootstrap/cache && exec /usr/bin/supervisord -c /etc/supervisord.conf"]

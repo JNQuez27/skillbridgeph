@@ -20,6 +20,10 @@ Artisan::command('demo:seed-if-empty', function () {
     $this->call('db:seed', ['--force' => true]);
 })->purpose('Seed the demo data only when the database has no users');
 
+Artisan::command('demo:restore-files', function () {
+    $this->info('Demo files restored: '.app(\Database\Seeders\DatabaseSeeder::class)->restoreDemoFiles());
+})->purpose('Re-create seeded demo files wiped by a restart (Render free plan has no disk)');
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
