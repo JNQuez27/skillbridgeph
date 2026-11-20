@@ -74,7 +74,7 @@ export default function PublicJobs({ jobs }) {
               {j.assessment && <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 8 }}>Asks for the <strong>{j.assessment}</strong> assessment.</div>}
               <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 6 }}>Posted {j.postedAt}</div>
             </div>
-            <a href="/signup" style={{ ...cta, background: COLORS.info, color: "#fff" }}>Sign up to apply</a>
+            <a href="/signup" style={{ ...cta, background: COLORS.accent, color: COLORS.brownDeep }}>Sign up to apply</a>
           </article>
         ))}
       </div>

@@ -27,7 +27,7 @@ export default function SkillBar({ skill, action = null }) {
               Unverified
             </span>
           ) : skill.evidenced ? (
-            <span className="sbph-badge" style={{ fontSize: 12, background: "#E0F2FE", color: "#075985" }}>
+            <span className="sbph-badge" style={{ fontSize: 12, background: "#FDF0D0", color: "#075985" }}>
               Self-reported + work sample
             </span>
           ) : (

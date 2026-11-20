@@ -36,7 +36,7 @@ const formatBytes = (bytes) => {
 
 const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
 const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
-const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
+const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
 const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
 const linkBtn = { border: "none", background: "none", padding: 0, color: COLORS.info, fontWeight: 600, cursor: "pointer", textDecoration: "underline", fontSize: "inherit", fontFamily: "inherit" };
 const legendStyle = { fontFamily: FONT_DISPLAY, fontSize: 15, fontWeight: 600, color: COLORS.brownDeep, padding: "0 6px" };
@@ -204,7 +204,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
 
       {/* Patent Fig. 3, step 345: recommend assessments for the skills still pending. */}
       {tab === "skills" && recommended.length > 0 && (
-        <section aria-labelledby="rec-h" style={{ ...cardStyle, marginBottom: 22, borderColor: COLORS.info, display: "grid", gap: 10 }}>
+        <section aria-labelledby="rec-h" style={{ ...cardStyle, marginBottom: 22, borderColor: COLORS.accent, display: "grid", gap: 10 }}>
           <h4 id="rec-h" style={{ ...headingStyle, marginBottom: 0 }}>Recommended assessments</h4>
           <p style={{ margin: 0, fontSize: 13, color: COLORS.textMid }}>These skills are still pending. Pass the assessment to turn each one into a verified badge.</p>
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
@@ -409,7 +409,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
                       <div style={{ fontSize: 12, color: COLORS.textMid, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                         <span>Shows:</span>
                         {(c.linkedSkills || []).length === 0 ? <span style={{ color: COLORS.textLight }}>no skills linked</span>
-                          : c.linkedSkills.map((n) => <span key={n} style={{ padding: "2px 8px", borderRadius: 999, background: "#E0F2FE", color: "#075985", fontWeight: 600 }}>{n}</span>)}
+                          : c.linkedSkills.map((n) => <span key={n} style={{ padding: "2px 8px", borderRadius: 999, background: "#FDF0D0", color: "#075985", fontWeight: 600 }}>{n}</span>)}
                         <button type="button" style={{ ...ghostBtn, padding: "2px 8px", minHeight: 28 }} onClick={() => setEditingLinks({ id: c.id, linkedSkills: c.linkedSkills || [] })}>Edit skills</button>
                       </div>
                     ))}
@@ -773,7 +773,7 @@ function PreferencePicker({ label, hint, options, value, onChange }) {
           const on = value.includes(o);
           return (
             <label key={o} style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 36, padding: "4px 12px", borderRadius: 999, cursor: "pointer", fontSize: 13,
-              border: `1px solid ${on ? COLORS.info : COLORS.parchmentDeep}`, background: on ? COLORS.parchmentDark : COLORS.cream, color: COLORS.brownDeep }}>
+              border: `1px solid ${on ? COLORS.accent : COLORS.parchmentDeep}`, background: on ? COLORS.parchmentDark : COLORS.cream, color: COLORS.brownDeep }}>
               <input type="checkbox" checked={on} onChange={() => onChange(on ? value.filter((v) => v !== o) : [...value, o])} />
               {o}
             </label>
@@ -926,7 +926,7 @@ function SkillPicker({ options, value, onToggle }) {
         const on = value.includes(n);
         return (
           <label key={n} style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 32, padding: "2px 10px", borderRadius: 999, cursor: "pointer", fontSize: 12,
-            border: `1px solid ${on ? COLORS.info : COLORS.parchmentDeep}`, background: on ? COLORS.parchmentDark : COLORS.cream, color: COLORS.brownDeep }}>
+            border: `1px solid ${on ? COLORS.accent : COLORS.parchmentDeep}`, background: on ? COLORS.parchmentDark : COLORS.cream, color: COLORS.brownDeep }}>
             <input type="checkbox" checked={on} onChange={() => onToggle(n)} />
             {n}
           </label>
@@ -943,8 +943,8 @@ const STATUS_LABEL = {
 // Fig. 7, step 715: every skill on the card says where the applicant stands, in words (not color alone).
 const SKILL_STATE = {
   verified: { label: "Verified", bg: "#F0FDF4", border: "#BBF7D0", color: "#166534" },
-  evidenced: { label: "Claimed + work sample", bg: "#F0F9FF", border: "#7DD3FC", color: "#075985" },
-  claimed: { label: "Claimed", bg: "#F0F9FF", border: "#BAE6FD", color: "#075985" },
+  evidenced: { label: "Claimed + work sample", bg: "#FFF6E0", border: "#ECA406", color: "#075985" },
+  claimed: { label: "Claimed", bg: "#FFF9EB", border: "#F3D89B", color: "#075985" },
   below: { label: "Below required level", bg: "#FFFBEB", border: "#FDE68A", color: "#92400E" },
   missing: { label: "Missing", bg: "#F8FAFC", border: "#E2E8F0", color: "#475569" },
 };

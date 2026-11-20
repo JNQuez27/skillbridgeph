@@ -13,7 +13,7 @@ const sectionMeta = {
 
 const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
 const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 4 };
-const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none", minHeight: 44 };
+const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none", minHeight: 44 };
 const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none", minHeight: 44 };
 const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
 
@@ -38,7 +38,7 @@ function AssessmentModeration({ assessments }) {
       <div role="group" aria-label="Filter assessments" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {[["flagged", "Needs a look"], ["Active", "Active"], ["Suspended", "Suspended"]].map(([k, l]) => (
           <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}
-            style={{ ...ghostBtn, minHeight: 36, background: filter === k ? COLORS.info : "transparent", color: filter === k ? "#fff" : COLORS.brownDeep, borderColor: filter === k ? COLORS.info : COLORS.parchmentDeep }}>
+            style={{ ...ghostBtn, minHeight: 36, background: filter === k ? COLORS.accent : "transparent", color: COLORS.brownDeep, borderColor: filter === k ? COLORS.accent : COLORS.parchmentDeep }}>
             {l} ({counts[k]})
           </button>
         ))}

@@ -90,7 +90,7 @@ export default function VideoRecorder({ onRecorded }) {
   return (
     <div style={{ display: "grid", gap: 10 }}>
       {phase === "idle" && (
-        <div><button type="button" onClick={openCamera} style={{ ...btn, background: COLORS.info, color: "#fff" }}>Open camera</button></div>
+        <div><button type="button" onClick={openCamera} style={{ ...btn, background: COLORS.accent, color: COLORS.brownDeep }}>Open camera</button></div>
       )}
 
       {(phase === "ready" || phase === "recording") && (

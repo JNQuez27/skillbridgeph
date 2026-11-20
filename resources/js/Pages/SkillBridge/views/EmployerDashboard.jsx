@@ -25,7 +25,7 @@ const sectionMeta = {
 
 const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
 const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
-const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.info, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, display: "inline-flex", alignItems: "center", gap: 6 };
+const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, display: "inline-flex", alignItems: "center", gap: 6 };
 const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
 const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
 
@@ -185,7 +185,7 @@ function InterviewKitModal({ job, candidate, doNotAsk, onClose }) {
               <div role="radiogroup" aria-label={`Score for question ${i + 1}`} style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button key={n} type="button" role="radio" aria-checked={ratings[i].score === n} onClick={() => setRating(i, { score: n })}
-                    style={{ ...ghostBtn, minWidth: 44, justifyContent: "center", background: ratings[i].score === n ? COLORS.info : "transparent", color: ratings[i].score === n ? "#fff" : COLORS.brownDeep }}>
+                    style={{ ...ghostBtn, minWidth: 44, justifyContent: "center", background: ratings[i].score === n ? COLORS.accent : "transparent", color: COLORS.brownDeep }}>
                     {n}
                   </button>
                 ))}
@@ -284,7 +284,7 @@ function Bar({ label, value, max, detail, title }) {
         <span style={{ color: COLORS.textMid }}>{detail}</span>
       </div>
       <div style={{ background: COLORS.parchmentDark, borderRadius: 4, height: 10 }} aria-hidden="true">
-        <div style={{ width: `${pct}%`, height: "100%", borderRadius: "0 4px 4px 0", background: COLORS.info }} />
+        <div style={{ width: `${pct}%`, height: "100%", borderRadius: "0 4px 4px 0", background: COLORS.accent }} />
       </div>
     </div>
   );
@@ -732,8 +732,8 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                 <button key={key} type="button" onClick={() => setStatusFilter(key)}
                   style={{
                     padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: "pointer",
-                    border: "1px solid " + (on ? COLORS.info : COLORS.parchmentDeep),
-                    background: on ? COLORS.info : "transparent",
+                    border: "1px solid " + (on ? COLORS.accent : COLORS.parchmentDeep),
+                    background: on ? COLORS.accent : "transparent",
                     color: on ? "#fff" : COLORS.textMid,
                   }}>
                   {label} ({count})
@@ -867,7 +867,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
               ) : rankedRows(candidates).map((row) => row.marker ? (
                 <div key={row.key} role="separator" aria-label={row.label}
                   style={row.dashed
-                    ? { borderTop: `2px dashed ${COLORS.info}`, paddingTop: 6, fontSize: 12, fontWeight: 700, color: COLORS.info }
+                    ? { borderTop: `2px dashed ${COLORS.accent}`, paddingTop: 6, fontSize: 12, fontWeight: 700, color: COLORS.info }
                     : { fontSize: 12, fontWeight: 700, color: COLORS.textMid, marginTop: 4 }}>
                   {row.label}
                 </div>
@@ -938,7 +938,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                   <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.brownLight }}>{job.applicants} applicants</span>
                 </div>
                 <div style={{ background: COLORS.parchmentDeep, borderRadius: 6, height: 6 }}>
-                  <div style={{ width: `${Math.min(100, job.applicants * 12)}%`, height: "100%", borderRadius: 6, background: `linear-gradient(90deg, ${COLORS.info}, ${COLORS.success})` }} />
+                  <div style={{ width: `${Math.min(100, job.applicants * 12)}%`, height: "100%", borderRadius: 6, background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.success})` }} />
                 </div>
               </div>
             ))}
@@ -953,7 +953,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                   <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.brownLight }}>{count} role(s)</span>
                 </div>
                 <div style={{ background: COLORS.parchmentDeep, borderRadius: 6, height: 6 }}>
-                  <div style={{ width: `${Math.min(100, count * 25)}%`, height: "100%", borderRadius: 6, background: `linear-gradient(90deg, ${COLORS.info}, ${COLORS.success})` }} />
+                  <div style={{ width: `${Math.min(100, count * 25)}%`, height: "100%", borderRadius: 6, background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.success})` }} />
                 </div>
               </div>
             ))}
