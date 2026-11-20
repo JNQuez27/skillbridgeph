@@ -17,15 +17,27 @@ class RegisteredUserController extends Controller
 {
     public function store(Request $request, MatchService $matcher)
     {
+        // The sign-up form asks for one "Full name"; split it into first name and surname.
+        if ($request->filled('fullName') && ! $request->filled('firstName')) {
+            $parts = preg_split('/\s+/', trim((string) $request->input('fullName')));
+            $request->merge([
+                'surname' => count($parts) > 1 ? array_pop($parts) : null,
+                'firstName' => implode(' ', $parts),
+            ]);
+        }
+
         $validated = $request->validate([
             'role' => ['required', 'in:jobseeker,employer'],
             'firstName' => ['required', 'string', 'max:255'],
             'middleName' => ['nullable', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
+            'companyName' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::min(8)],
+            'password' => ['required', Rules\Password::min(8)->numbers()],
             // Data Privacy Act (RA 10173): processing needs the person's informed consent.
             'acceptPrivacy' => ['accepted'],
+        ], [
+            'surname.required' => 'Enter your first and last name.',
         ]);
 
         $fullName = trim(collect([$validated['firstName'], $validated['middleName'] ?? null, $validated['surname']])
@@ -46,7 +58,7 @@ class RegisteredUserController extends Controller
         if ($user->role === 'employer') {
             EmployerProfile::create([
                 'user_id' => $user->id,
-                'company_name' => $fullName."'s Company",
+                'company_name' => filled($validated['companyName'] ?? null) ? trim($validated['companyName']) : $fullName."'s Company",
             ]);
         } else {
             $profile = ApplicantProfile::create([

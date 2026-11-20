@@ -1,24 +1,21 @@
 import { useForm } from "@inertiajs/react";
-import AuthLayout from "./components/layout/AuthLayout";
+import AuthLayout, { PANELS } from "./components/layout/AuthLayout";
 import Input from "./components/ui/Input";
-import Select from "./components/ui/Select";
 import Button from "./components/ui/Button";
 
-const roleOptions = [
-  { value: "jobseeker", label: "Applicant" },
-  { value: "employer", label: "Employer" },
-];
+const COPY = {
+  jobseeker: { title: "Make your next move.", subtitle: "Create a free job seeker account.", emailLabel: "Email address", emailPlaceholder: "you@email.com" },
+  employer: { title: "Find your next great hire.", subtitle: "Create your employer account.", emailLabel: "Work email", emailPlaceholder: "you@company.ph" },
+};
 
 export default function Signup() {
   const { data, setData, post, processing, errors } = useForm({
     // "Post a job" links arrive with ?role=employer preselected.
     role: new URLSearchParams(window.location.search).get("role") === "employer" ? "employer" : "jobseeker",
-    firstName: "",
-    middleName: "",
-    surname: "",
+    fullName: "",
+    companyName: "",
     email: "",
     password: "",
-    password_confirmation: "",
     acceptPrivacy: false,
   });
 
@@ -28,99 +25,51 @@ export default function Signup() {
   };
 
   const isEmployer = data.role === "employer";
-  const title = isEmployer ? "Create your Employer account" : "Create your Applicant account";
-  const subtitle = isEmployer
-    ? "Start posting roles and reviewing verified candidates."
-    : "Join SkillBridge PH and start building your skill-based profile.";
-  const nextStepHint = isEmployer
-    ? "Next: set up your company details and verify your business."
-    : "Next: build your profile — skills, education, and experience.";
+  const copy = COPY[data.role];
+  const nameError = errors.firstName || errors.surname;
 
   return (
-    <AuthLayout title={title} subtitle={subtitle}>
-      <form className="flex flex-col gap-3" onSubmit={submit}>
-        <Select
-          id="signup-role"
-          label="I'm signing up as"
-          value={data.role}
-          onChange={(event) => setData("role", event.target.value)}
-          options={roleOptions}
-          hint={nextStepHint}
-          error={errors.role}
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            id="signup-first-name"
-            label="First name"
-            placeholder="Andrea"
-            value={data.firstName}
-            onChange={(event) => setData("firstName", event.target.value)}
-            error={errors.firstName}
-          />
-          <Input
-            id="signup-surname"
-            label="Surname"
-            placeholder="Santos"
-            value={data.surname}
-            onChange={(event) => setData("surname", event.target.value)}
-            error={errors.surname}
-          />
+    <AuthLayout title={copy.title} subtitle={copy.subtitle} panel={PANELS[data.role]}>
+      <form className="flex flex-col gap-4" onSubmit={submit}>
+        <div role="radiogroup" aria-label="Account type" className="grid grid-cols-2 gap-1 rounded-full border border-[#F3D89B] bg-[#FFF6E3] p-1">
+          {[["jobseeker", "Job seeker"], ["employer", "Employer"]].map(([value, label]) => (
+            <button key={value} type="button" role="radio" aria-checked={data.role === value}
+              onClick={() => setData("role", value)}
+              className={`min-h-10 rounded-full text-sm font-semibold transition ${data.role === value ? "bg-[#ECA406] text-neutral-900 shadow-sm" : "bg-white text-neutral-700 hover:bg-[#FFF6E0]"}`}>
+              {label}
+            </button>
+          ))}
         </div>
-        <Input
-          id="signup-middle-name"
-          label="Middle name (optional)"
-          placeholder="Lopez"
-          value={data.middleName}
-          onChange={(event) => setData("middleName", event.target.value)}
-        />
-        <Input
-          id="signup-email"
-          label="Email"
-          type="email"
-          placeholder="you@email.com"
-          value={data.email}
-          onChange={(event) => setData("email", event.target.value)}
-          error={errors.email}
-        />
-        <Input
-          id="signup-password"
-          label="Password"
-          type="password"
-          placeholder="At least 8 characters"
-          value={data.password}
-          onChange={(event) => setData("password", event.target.value)}
-          error={errors.password}
-        />
-        <Input
-          id="signup-confirm"
-          label="Confirm password"
-          type="password"
-          placeholder="Repeat password"
-          value={data.password_confirmation}
-          onChange={(event) => setData("password_confirmation", event.target.value)}
-        />
-        <label className="flex items-start gap-3 rounded-xl border border-sky-100 bg-sky-50/70 p-3 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            className="mt-0.5 h-4 w-4"
-            checked={data.acceptPrivacy}
-            onChange={(event) => setData("acceptPrivacy", event.target.checked)}
-          />
+        {errors.role && <p role="alert" className="text-xs text-rose-600">{errors.role}</p>}
+
+        <Input id="signup-full-name" label="Full name" placeholder={isEmployer ? "Paolo Reyes" : "Mika Santos"} autoComplete="name"
+          value={data.fullName} onChange={(e) => setData("fullName", e.target.value)} error={nameError} />
+        {isEmployer && (
+          <Input id="signup-company" label="Company name" placeholder="Kubo Digital" autoComplete="organization"
+            value={data.companyName} onChange={(e) => setData("companyName", e.target.value)} error={errors.companyName} />
+        )}
+        <Input id="signup-email" label={copy.emailLabel} type="email" placeholder={copy.emailPlaceholder} autoComplete="email"
+          value={data.email} onChange={(e) => setData("email", e.target.value)} error={errors.email} />
+        <Input id="signup-password" label="Password" type="password" autoComplete="new-password"
+          hint="At least 8 characters, including a number."
+          value={data.password} onChange={(e) => setData("password", e.target.value)} error={errors.password} />
+
+        <label className="flex items-start gap-3 text-xs text-neutral-700">
+          <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#ECA406]" checked={data.acceptPrivacy}
+            onChange={(e) => setData("acceptPrivacy", e.target.checked)} />
           <span>
-            I have read the{" "}
-            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-sky-700 underline">Privacy Notice</a>{" "}
-            and agree to SkillBridge PH processing my information to match me with {isEmployer ? "candidates" : "jobs"}.
+            I agree to the Terms of Service and{" "}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-neutral-900 underline">Privacy Policy</a>.
           </span>
         </label>
-        {errors.acceptPrivacy && <p role="alert" className="text-xs text-rose-600">Please accept the Privacy Notice to create an account.</p>}
-        <Button type="submit" loading={processing} disabled={processing || !data.acceptPrivacy} className="mt-1 w-full">
-          Create account
+        {errors.acceptPrivacy && <p role="alert" className="text-xs text-rose-600">Please accept the Privacy Policy to create an account.</p>}
+
+        <Button type="submit" loading={processing} disabled={processing || !data.acceptPrivacy} className="w-fit px-6">
+          Create my account →
         </Button>
-        <p className="text-center text-xs text-slate-500">
-          Already have an account?{" "}
-          <a className="font-semibold text-sky-700 hover:text-sky-800" href="/login">
-            Log in
-          </a>
+        <p className="text-xs text-neutral-600">
+          Already registered?{" "}
+          <a className="font-semibold text-neutral-900 underline" href="/login">Log in</a>
         </p>
       </form>
     </AuthLayout>

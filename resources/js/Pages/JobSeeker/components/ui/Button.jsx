@@ -6,11 +6,11 @@ export default function Button({
   className = "",
   ...props
 }) {
-  const base = "inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const base = "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
   const variants = {
-    primary: "bg-sky-700 text-white hover:bg-sky-800 focus:ring-sky-400",
-    secondary: "bg-white text-slate-700 border border-slate-200 hover:bg-sky-50 focus:ring-sky-300",
-    ghost: "bg-transparent text-slate-600 hover:bg-sky-50 focus:ring-sky-200",
+    primary: "bg-[#ECA406] text-neutral-900 hover:bg-[#D69405]",
+    secondary: "bg-white text-neutral-900 border border-[#F3D89B] hover:bg-[#FFF6E0]",
+    ghost: "bg-transparent text-neutral-700 hover:bg-[#FFF6E0]",
   };
   const isDisabled = disabled || loading;
 
@@ -21,7 +21,7 @@ export default function Button({
       {...props}
     >
       {loading && (
-        <span className="mr-2 inline-flex h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white" />
+        <span className="mr-2 inline-flex h-4 w-4 animate-spin rounded-full border-2 border-neutral-900/40 border-t-neutral-900" />
       )}
       {children}
     </button>

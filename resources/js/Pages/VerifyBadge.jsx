@@ -8,14 +8,14 @@ export default function VerifyBadge({ verificationId, badge }) {
   return (
     <div style={{ minHeight: "100vh", background: COLORS.parchment, fontFamily: FONT_BODY, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <Head title={badge ? `${badge.badge} - verification` : "Badge verification"} />
-      <main style={{ width: "min(440px, 100%)", background: COLORS.cream, borderRadius: 18, border: `1px solid ${COLORS.parchmentDeep}`, boxShadow: "0 20px 44px rgba(12,74,110,0.14)", overflow: "hidden" }}>
+      <main style={{ width: "min(440px, 100%)", background: COLORS.cream, borderRadius: 18, border: `1px solid ${COLORS.parchmentDeep}`, boxShadow: "0 20px 44px rgba(0,0,0,0.14)", overflow: "hidden" }}>
         <div style={{ background: `linear-gradient(120deg, ${COLORS.brownDeep}, ${COLORS.brownMid})`, color: "#fff", padding: "18px 22px" }}>
           <div style={{ fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.85 }}>SkillBridge PH · badge verification</div>
           <div style={{ fontFamily: "ui-monospace, Consolas, monospace", fontSize: 15, marginTop: 6, letterSpacing: "0.04em" }}>{verificationId}</div>
         </div>
         {badge ? (
           <div style={{ padding: "20px 22px", display: "grid", gap: 12 }}>
-            <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, color: "#166534", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10, padding: "10px 12px", fontSize: 14, fontWeight: 700 }}>
+            <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A5A00", background: "#FFF3D6", border: "1px solid #F3D89B", borderRadius: 10, padding: "10px 12px", fontSize: 14, fontWeight: 700 }}>
               <span aria-hidden="true">✓</span> Verified badge
             </div>
             <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 22, color: COLORS.brownDeep, margin: 0 }}>{badge.badge}</h1>

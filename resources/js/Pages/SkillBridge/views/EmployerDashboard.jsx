@@ -35,32 +35,32 @@ const companyInitials = (name) => {
 };
 
 const STATUS_META = {
-  applied: { label: "Applied", bg: "rgba(22,163,74,0.14)", color: "#15803D" },
+  applied: { label: "Applied", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
   invited: { label: "Invited", bg: "rgba(124,58,237,0.14)", color: "#7C3AED" },
-  shortlisted: { label: "Shortlisted", bg: "rgba(3,105,161,0.14)", color: "#0369A1" },
+  shortlisted: { label: "Shortlisted", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
   interviewing: { label: "Interviewing", bg: "rgba(180,83,9,0.14)", color: "#B45309" },
-  hired: { label: "Hired", bg: "rgba(22,163,74,0.14)", color: "#15803D" },
-  not_selected: { label: "Not selected", bg: "rgba(71,85,105,0.12)", color: "#475569" },
-  declined: { label: "Declined invitation", bg: "rgba(71,85,105,0.12)", color: "#475569" },
+  hired: { label: "Hired", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
+  not_selected: { label: "Not selected", bg: "rgba(85,85,85,0.12)", color: "#555555" },
+  declined: { label: "Declined invitation", bg: "rgba(85,85,85,0.12)", color: "#555555" },
 };
 
 const ASSESSMENT_STATE = {
-  passed: { label: "Passed", color: "#15803D" },
+  passed: { label: "Passed", color: "#8A5A00" },
   failed: { label: "Did not pass (no attempts left)", color: "#B91C1C" },
   in_progress: { label: "Attempted, not passed yet", color: "#B45309" },
-  not_taken: { label: "Not taken yet", color: "#475569" },
+  not_taken: { label: "Not taken yet", color: "#555555" },
 };
 
 function Modal({ title, eyebrow, onClose, children }) {
   return (
     <div role="dialog" aria-modal="true" onClick={onClose} style={{
-      position: "fixed", inset: 0, background: "rgba(12, 74, 110, 0.5)",
+      position: "fixed", inset: 0, background: "rgba(0,0,0, 0.5)",
       display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 60,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
         background: COLORS.cream, borderRadius: 16, padding: "22px 24px", width: "min(680px, 100%)",
         maxHeight: "86vh", overflowY: "auto", border: `1px solid ${COLORS.parchmentDeep}`,
-        boxShadow: "0 22px 60px rgba(12, 74, 110, 0.28)", display: "grid", gap: 16,
+        boxShadow: "0 22px 60px rgba(0,0,0, 0.28)", display: "grid", gap: 16,
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
           <div>
@@ -85,8 +85,8 @@ function VerificationSignals({ signals }) {
   const chip = (text, tone) => (
     <span key={text} style={{
       padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 600,
-      background: tone === "warn" ? "rgba(180,83,9,0.12)" : tone === "good" ? "rgba(22,163,74,0.12)" : COLORS.parchmentDark,
-      color: tone === "warn" ? "#B45309" : tone === "good" ? "#15803D" : COLORS.textMid,
+      background: tone === "warn" ? "rgba(180,83,9,0.12)" : tone === "good" ? "rgba(236,164,6,0.12)" : COLORS.parchmentDark,
+      color: tone === "warn" ? "#B45309" : tone === "good" ? "#8A5A00" : COLORS.textMid,
     }}>{text}</span>
   );
   return (
@@ -103,7 +103,7 @@ function VerificationSignals({ signals }) {
 }
 
 const VERDICT = {
-  green: { label: "Checks passed", bg: "rgba(22,163,74,0.12)", color: "#15803D" },
+  green: { label: "Checks passed", bg: "rgba(236,164,6,0.12)", color: "#8A5A00" },
   amber: { label: "Needs a look", bg: "rgba(180,83,9,0.12)", color: "#B45309" },
   red: { label: "Review required", bg: "rgba(185,28,28,0.12)", color: "#B91C1C" },
 };
@@ -246,7 +246,7 @@ function InterviewChip({ interview }) {
   if (!interview) return null;
   return (
     <span title={`Interviewed by ${interview.by || "employer"} on ${interview.at}`}
-      style={{ padding: "2px 9px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: "rgba(3,105,161,0.12)", color: "#075985" }}>
+      style={{ padding: "2px 9px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: "rgba(236,164,6,0.12)", color: "#333333" }}>
       Interview {Number(interview.score).toFixed(1)} / 5
     </span>
   );
@@ -392,7 +392,7 @@ function TaskReview({ task }) {
         <textarea rows={2} style={{ ...inputStyle, resize: "vertical" }} value={form.data.feedback} onChange={(e) => form.setData("feedback", e.target.value)} />
       </Field>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <span aria-live="polite" style={{ fontSize: 13, fontWeight: 600, color: !filled ? COLORS.textLight : final >= task.passingScore ? "#15803D" : "#B91C1C" }}>
+        <span aria-live="polite" style={{ fontSize: 13, fontWeight: 600, color: !filled ? COLORS.textLight : final >= task.passingScore ? "#8A5A00" : "#B91C1C" }}>
           {filled ? `Final ${final}%: ${final >= task.passingScore ? "passes, the badge will be issued" : "does not pass"}` : "Score every criterion"}
         </span>
         <button type="submit" disabled={!filled || form.processing} style={{ ...primaryBtn, opacity: !filled || form.processing ? 0.6 : 1 }}>Submit score</button>
@@ -549,7 +549,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
         background: `linear-gradient(120deg, ${COLORS.brownDeep}, ${COLORS.brownMid})`,
         borderRadius: 18, padding: "28px 32px", marginBottom: 24,
         display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap",
-        boxShadow: "0 20px 44px rgba(12, 74, 110, 0.22)",
+        boxShadow: "0 20px 44px rgba(0,0,0, 0.22)",
       }}>
         <div style={{
           width: 80, height: 80, borderRadius: "50%",
@@ -560,10 +560,10 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
         }}>{companyInitials(company.companyName)}</div>
         <div style={{ flex: 1, minWidth: 220 }}>
           <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, color: "#fff", marginBottom: 4 }}>{company.companyName || "Your Company"}</h2>
-          <p style={{ color: "rgba(224,242,254,0.85)", fontSize: 13, marginBottom: 12 }}>{company.industry || "Employer workspace"}</p>
+          <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginBottom: 12 }}>{company.industry || "Employer workspace"}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {company.emailVerified && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(34,197,94,0.18)", color: COLORS.goldLight, padding: "4px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(236,164,6,0.18)", color: COLORS.goldLight, padding: "4px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
                 <IconCheck size={12} /> Verified
               </span>
             )}
@@ -571,7 +571,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
               <IconBriefcase size={12} /> {jobPosts.length} active role(s)
             </span>
             {company.locationCity && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(224,242,254,0.8)", fontSize: 12 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
                 <IconMapPin size={13} /> {company.locationCity}
               </span>
             )}
@@ -581,7 +581,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
           {[[jobPosts.length, "Roles"], [stats.activeApplicants ?? 0, "Applicants"], [stats.hired ?? 0, "Hired"]].map(([v, l]) => (
             <div key={l} style={{ textAlign: "center", background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 16px", minWidth: 76 }}>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, color: COLORS.goldLight, fontWeight: 700 }}>{v}</div>
-              <div style={{ fontSize: 12, color: "rgba(224,242,254,0.7)" }}>{l}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{l}</div>
             </div>
           ))}
         </div>
@@ -620,7 +620,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                 </div>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {job.status === "Closed"
-                    ? <span className="sbph-badge" style={{ background: "#F1F5F9", color: "#475569" }}>Closed · {job.closedReason || "ended"}</span>
+                    ? <span className="sbph-badge" style={{ background: "#F1F5F9", color: "#555555" }}>Closed · {job.closedReason || "ended"}</span>
                     : job.expired
                       ? <span className="sbph-badge" style={{ background: "rgba(180,83,9,0.12)", color: "#92400E" }}>Expired {job.closingDate}</span>
                       : <span className="sbph-badge badge-open">Open{job.closingDate ? ` · closes ${job.closingDate}` : ""}</span>}
@@ -635,7 +635,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                   </span>
                 ))}
                 {job.assessment && (
-                  <span style={{ padding: "4px 10px", borderRadius: 999, background: "rgba(3,105,161,0.10)", fontSize: 12, fontWeight: 600, color: "#075985" }}>
+                  <span style={{ padding: "4px 10px", borderRadius: 999, background: "rgba(236,164,6,0.10)", fontSize: 12, fontWeight: 600, color: "#333333" }}>
                     Assessment: {job.assessment.title}
                   </span>
                 )}
@@ -785,7 +785,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                       ) : (
                       <div style={{ display: "grid", gap: 6 }}>
                         {a.hired ? (
-                          <span style={{ fontSize: 12, fontWeight: 700, color: "#15803D", textAlign: "center" }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#8A5A00", textAlign: "center" }}>
                             Hired via {a.reviewedMode === "auto" ? "system review" : "manual review"}
                           </span>
                         ) : a.status === "not_selected" ? null : (
@@ -808,7 +808,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                         )}
                         {/* Fig. 7, steps 740-760: closing the loop; the applicant is told in the app and by email. */}
                         {!a.hired && a.status !== "not_selected" && (
-                          <button style={{ ...ghostBtn, padding: "6px 12px", color: "#475569" }}
+                          <button style={{ ...ghostBtn, padding: "6px 12px", color: "#555555" }}
                             onClick={() => { if (window.confirm(`Mark ${a.name} as not selected for ${a.jobTitle}? They will be notified.`)) moveTo(a.jobId, a.id, "not_selected"); }}>
                             Not selected
                           </button>
@@ -977,7 +977,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
           <div style={{ ...cardStyle, display: "grid", gap: 10, alignContent: "start" }}>
             <h4 style={headingStyle}>Verification</h4>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: company.emailVerified ? COLORS.success : COLORS.textMid }}>
-              <span style={{ width: 34, height: 34, borderRadius: 10, background: company.emailVerified ? "rgba(22,163,74,0.12)" : COLORS.parchmentDark, color: company.emailVerified ? COLORS.success : COLORS.textLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ width: 34, height: 34, borderRadius: 10, background: company.emailVerified ? "rgba(236,164,6,0.12)" : COLORS.parchmentDark, color: company.emailVerified ? COLORS.success : COLORS.textLight, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {company.emailVerified ? <IconCheck size={18} /> : <IconBuilding size={18} />}
               </span>
               {{
@@ -1091,8 +1091,8 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
             const skillsLeft = review.candidate.verifiable || [];
             if (!company.emailVerified || evidence.length === 0 || skillsLeft.length === 0) return null;
             return (
-              <div style={{ border: "1px solid rgba(22,163,74,0.35)", borderRadius: 10, padding: "12px 14px", background: "rgba(22,163,74,0.06)", display: "grid", gap: 10 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#15803D" }}>Verify a skill from evidence</div>
+              <div style={{ border: "1px solid rgba(236,164,6,0.35)", borderRadius: 10, padding: "12px 14px", background: "rgba(236,164,6,0.06)", display: "grid", gap: 10 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#8A5A00" }}>Verify a skill from evidence</div>
                 <div style={{ fontSize: 12, color: COLORS.textMid }}>
                   Only if the file you opened clearly demonstrates the skill. The badge will name {company.companyName} and this file, and the candidate cannot delete it afterwards.
                   A video counts only after your interview confirmed it is the same person and they repeated the task live.
@@ -1320,7 +1320,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                     <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.brownDeep }}>{c.name}</div>
                     <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 2 }}>{c.role}{c.bestJobTitle ? ` · best fit: ${c.bestJobTitle}` : ""}</div>
                     <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                      {(c.skills || []).slice(0, 3).map((s) => <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 999, background: "#DCFCE7", fontSize: 12, color: "#15803D" }}><IconCheck size={9} /> {s}</span>)}
+                      {(c.skills || []).slice(0, 3).map((s) => <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 999, background: "#FFF3D6", fontSize: 12, color: "#8A5A00" }}><IconCheck size={9} /> {s}</span>)}
                       {c.claimed > 0 && <span style={{ padding: "3px 8px", borderRadius: 999, background: COLORS.cream, fontSize: 12, color: COLORS.textMid, border: `1px solid ${COLORS.parchmentDeep}` }}>+{c.claimed} self-reported</span>}
                     </div>
                   </div>

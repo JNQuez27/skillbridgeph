@@ -8,7 +8,7 @@ export default function FlashBanner() {
   const isError = Boolean(props.flash?.error);
   return (
     <div role={isError ? "alert" : "status"}
-      className={`rounded-xl border px-4 py-3 text-sm ${isError ? "border-rose-200 bg-rose-50 text-rose-700" : "border-green-200 bg-green-50 text-green-700"}`}>
+      className={`rounded-xl border px-4 py-3 text-sm ${isError ? "border-rose-200 bg-rose-50 text-rose-700" : "border-[#F3D89B] bg-[#FFF3D6] text-[#8A5A00]"}`}>
       {text}
     </div>
   );

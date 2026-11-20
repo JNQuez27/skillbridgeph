@@ -301,7 +301,7 @@ export default function SkillBridgePage() {
                   style={{
                     position: "absolute", top: "calc(100% + 10px)", right: 0, minWidth: 220,
                     background: "#fff", border: `1px solid ${COLORS.parchmentDeep}`, borderRadius: 14,
-                    boxShadow: "0 18px 40px rgba(11, 29, 58, 0.16)", padding: 8,
+                    boxShadow: "0 18px 40px rgba(0,0,0, 0.16)", padding: 8,
                     display: "flex", flexDirection: "column", gap: 2, zIndex: 10,
                   }}
                 >
@@ -382,10 +382,10 @@ export default function SkillBridgePage() {
           position: "fixed", top: 76, left: "50%", transform: "translateX(-50%)", zIndex: 80,
           width: "min(560px, calc(100% - 32px))", display: "flex", alignItems: "flex-start", gap: 10,
           padding: "12px 14px", borderRadius: 12, fontSize: 13, lineHeight: 1.45,
-          background: notice.tone === "error" ? "#FEF2F2" : "#F0FDF4",
-          border: `1px solid ${notice.tone === "error" ? "#FECACA" : "#BBF7D0"}`,
-          color: notice.tone === "error" ? "#991B1B" : "#166534",
-          boxShadow: "0 12px 30px rgba(12, 74, 110, 0.16)",
+          background: notice.tone === "error" ? "#FEF2F2" : "#FFF3D6",
+          border: `1px solid ${notice.tone === "error" ? "#FECACA" : "#F3D89B"}`,
+          color: notice.tone === "error" ? "#991B1B" : "#8A5A00",
+          boxShadow: "0 12px 30px rgba(0,0,0, 0.16)",
         }}>
           <span style={{ fontWeight: 700 }}>{notice.tone === "error" ? "Not done:" : "Done:"}</span>
           <span style={{ flex: 1 }}>{notice.text}</span>

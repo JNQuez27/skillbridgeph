@@ -1,8 +1,8 @@
 export default function Badge({ children, tone = "default" }) {
   const tones = {
     default: "bg-slate-100 text-slate-600",
-    info: "bg-sky-100 text-sky-700",
-    success: "bg-green-100 text-green-700",
+    info: "bg-[#FFF6E0] text-neutral-900",
+    success: "bg-[#FFF3D6] text-[#8A5A00]",
     warning: "bg-amber-100 text-amber-700",
   };
 

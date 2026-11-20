@@ -11,13 +11,13 @@ export default function VerifyEmail({ email }) {
     <AuthLayout title="Confirm your email" subtitle="One quick step before you build your profile.">
       <div className="flex flex-col gap-4">
         <FlashBanner />
-        <div className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-4 text-sm text-slate-700">
-          We sent a confirmation link to <strong className="break-all text-sky-900">{email}</strong>.
+        <div className="rounded-xl border border-[#F3D89B] bg-[#FFF6E0] px-4 py-4 text-sm text-neutral-900">
+          We sent a confirmation link to <strong className="break-all text-neutral-900">{email}</strong>.
         </div>
-        <ol className="flex flex-col gap-2 text-sm text-slate-700">
+        <ol className="flex flex-col gap-2 text-sm text-neutral-900">
           {["Open the email from SkillBridge PH.", "Click Verify Email Address. The link works for 60 minutes.", "You'll continue straight to your profile setup."].map((step, i) => (
             <li key={step} className="flex items-start gap-3">
-              <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-700 text-xs font-bold text-white">{i + 1}</span>
+              <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#ECA406] text-xs font-bold text-white">{i + 1}</span>
               <span className="pt-0.5">{step}</span>
             </li>
           ))}
@@ -28,7 +28,7 @@ export default function VerifyEmail({ email }) {
         </Button>
         <p className="text-center text-xs text-slate-500">
           Wrong email address?{" "}
-          <button type="button" className="inline-block py-3 font-semibold text-sky-700 hover:text-sky-800" onClick={() => router.post("/logout")}>
+          <button type="button" className="inline-block py-3 font-semibold text-neutral-900 hover:text-neutral-900" onClick={() => router.post("/logout")}>
             Log out and sign up again
           </button>
         </p>

@@ -51,20 +51,20 @@ const sections = [
 
 export default function Privacy() {
   return (
-    <div className="min-h-screen bg-sky-50 px-4 py-10 font-sans text-slate-800">
+    <div className="min-h-screen bg-[#FFF6E0] px-4 py-10 font-sans text-neutral-900">
       <Head title="Privacy Notice" />
       <main className="mx-auto max-w-3xl space-y-6">
-        <a href="/" className="inline-block py-3 text-sm font-semibold text-sky-700">← SkillBridge PH</a>
+        <a href="/" className="inline-block py-3 text-sm font-semibold text-neutral-900">← SkillBridge PH</a>
         <header>
-          <h1 className="text-3xl font-semibold text-sky-900">Privacy Notice</h1>
+          <h1 className="text-3xl font-semibold text-neutral-900">Privacy Notice</h1>
           <p className="mt-2 text-sm text-slate-600">
             How SkillBridge PH collects and uses personal information, under the Data Privacy Act of 2012 (Republic Act No. 10173).
           </p>
         </header>
         {sections.map((section) => (
           <section key={section.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-sky-900">{section.title}</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-700">
+            <h2 className="text-lg font-semibold text-neutral-900">{section.title}</h2>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-neutral-900">
               {section.items.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </section>

@@ -104,11 +104,11 @@ function OnboardingContent() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-50 px-4 py-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-[#FFF6E0] px-4 py-8 font-sans text-neutral-900">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
         <div>
-          <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sky-700">SkillBridge PH</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold text-sky-900">Applicant Onboarding</h1>
+          <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-neutral-900">SkillBridge PH</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold text-neutral-900">Applicant Onboarding</h1>
           <p className="mt-2 text-sm text-slate-500">Complete your profile to get matched with more opportunities.</p>
         </div>
         <FlashBanner />
@@ -116,7 +116,7 @@ function OnboardingContent() {
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-slate-800">Step {stepIndex + 1} of {steps.length}</p>
+              <p className="text-sm font-semibold text-neutral-900">Step {stepIndex + 1} of {steps.length}</p>
               <p className="text-xs text-slate-500">{steps[stepIndex].title}</p>
             </div>
             <div className="w-full max-w-xs">
@@ -177,7 +177,7 @@ function OnboardingContent() {
                   key={skill}
                   type="button"
                   onClick={() => toggleSkill(skill)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${formData.skills.includes(skill) ? "border-sky-400 bg-sky-50 text-sky-700" : "border-slate-200 bg-white text-slate-600"}`}
+                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${formData.skills.includes(skill) ? "border-[#ECA406] bg-[#FFF6E0] text-neutral-900" : "border-slate-200 bg-white text-slate-600"}`}
                 >
                   {skill}
                 </button>
@@ -201,10 +201,10 @@ function OnboardingContent() {
             </div>
             {formData.skills.length > 0 && (
               <div>
-                <p className="text-sm font-semibold text-slate-800">Your skills ({formData.skills.length})</p>
+                <p className="text-sm font-semibold text-neutral-900">Your skills ({formData.skills.length})</p>
                 <ul className="mt-2 flex flex-wrap gap-2" aria-label="Skills you added">
                   {formData.skills.map((skill) => (
-                    <li key={skill} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1 text-xs font-semibold text-slate-700">
+                    <li key={skill} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1 text-xs font-semibold text-neutral-900">
                       {skill}
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">Pending</span>
                       <button type="button" onClick={() => toggleSkill(skill)} aria-label={`Remove ${skill}`}
@@ -299,7 +299,7 @@ function OnboardingContent() {
             <label className="flex flex-col gap-2 text-sm text-slate-600">
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Experience level</span>
               <select
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-neutral-900"
                 value={formData.experienceLevel}
                 onChange={(event) => setFormData((prev) => ({ ...prev, experienceLevel: event.target.value }))}
               >
@@ -316,7 +316,7 @@ function OnboardingContent() {
           <Card className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-800">Basic Info</p>
+                <p className="text-sm font-semibold text-neutral-900">Basic Info</p>
                 <p className="text-xs text-slate-500">{formData.bio}</p>
                 <p className="mt-1 text-xs text-slate-500">{formData.location} · wants: {formData.desiredRoles}</p>
               </div>
@@ -326,7 +326,7 @@ function OnboardingContent() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-800">Skills</p>
+                <p className="text-sm font-semibold text-neutral-900">Skills</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {formData.skills.map((skill) => (
                     <Badge key={skill} tone="info">{skill} · Pending</Badge>
@@ -339,7 +339,7 @@ function OnboardingContent() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-800">Education</p>
+                <p className="text-sm font-semibold text-neutral-900">Education</p>
                 <p className="text-xs text-slate-500">
                   {formData.education.school} - {formData.education.degree} ({formData.education.year})
                 </p>
@@ -350,7 +350,7 @@ function OnboardingContent() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-800">Experience</p>
+                <p className="text-sm font-semibold text-neutral-900">Experience</p>
                 <p className="text-xs text-slate-500">{formData.experience.title || "Optional"}</p>
                 <p className="mt-1 text-xs text-slate-500">Level: {formData.experienceLevel || "-"}</p>
               </div>
@@ -358,7 +358,7 @@ function OnboardingContent() {
                 Edit
               </Button>
             </div>
-            <p className="rounded-xl border border-sky-100 bg-sky-50/70 p-3 text-xs text-slate-600">
+            <p className="rounded-xl border border-[#F3D89B] bg-[#FFF6E0]/70 p-3 text-xs text-slate-600">
               Your skills are saved as <strong>self-reported</strong>. To get them verified, take a company
               assessment or upload evidence from your dashboard. Verified skills rank you higher with employers.
             </p>

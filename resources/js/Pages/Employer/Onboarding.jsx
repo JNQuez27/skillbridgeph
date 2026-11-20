@@ -68,11 +68,11 @@ export default function EmployerOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-50 px-4 py-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-[#FFF6E0] px-4 py-8 font-sans text-neutral-900">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-sky-700">SkillBridge PH</p>
-          <h1 className="mt-2 text-3xl font-semibold text-sky-900">Employer Onboarding</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-neutral-900">SkillBridge PH</p>
+          <h1 className="mt-2 text-3xl font-semibold text-neutral-900">Employer Onboarding</h1>
           <p className="mt-2 text-sm text-slate-500">
             Set up your company background and verify your business so candidates can trust your roles.
           </p>
@@ -82,7 +82,7 @@ export default function EmployerOnboarding() {
         <Card className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-slate-800">Step {stepIndex + 1} of {steps.length}</p>
+              <p className="text-sm font-semibold text-neutral-900">Step {stepIndex + 1} of {steps.length}</p>
               <p className="text-xs text-slate-500">{steps[stepIndex].title}</p>
             </div>
             <div className="w-full max-w-xs">
@@ -176,17 +176,17 @@ export default function EmployerOnboarding() {
         {stepIndex === 2 && (
           <Card className="space-y-5">
             <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-sm font-semibold text-slate-800">Review your company</p>
+              <p className="text-sm font-semibold text-neutral-900">Review your company</p>
               <div className="mt-3 grid gap-2 text-sm text-slate-600">
-                <div className="flex justify-between gap-4"><span className="text-slate-400">Company</span><span className="font-medium text-slate-700">{data.companyName || "—"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-slate-400">Industry</span><span className="font-medium text-slate-700">{data.industry || "—"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-slate-400">Size</span><span className="font-medium text-slate-700">{data.companySize || "—"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-slate-400">Location</span><span className="font-medium text-slate-700">{[data.locationCity, data.locationRegion].filter(Boolean).join(", ") || "—"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-slate-400">Recruiter</span><span className="font-medium text-slate-700">{data.recruiterName || "—"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-slate-400">Company</span><span className="font-medium text-neutral-900">{data.companyName || "—"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-slate-400">Industry</span><span className="font-medium text-neutral-900">{data.industry || "—"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-slate-400">Size</span><span className="font-medium text-neutral-900">{data.companySize || "—"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-slate-400">Location</span><span className="font-medium text-neutral-900">{[data.locationCity, data.locationRegion].filter(Boolean).join(", ") || "—"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-slate-400">Recruiter</span><span className="font-medium text-neutral-900">{data.recruiterName || "—"}</span></div>
               </div>
             </div>
 
-            <label className="flex items-start gap-3 rounded-xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-slate-700">
+            <label className="flex items-start gap-3 rounded-xl border border-[#F3D89B] bg-[#FFF6E0]/70 p-4 text-sm text-neutral-900">
               <input
                 type="checkbox"
                 className="mt-0.5 h-4 w-4"
@@ -194,7 +194,7 @@ export default function EmployerOnboarding() {
                 onChange={(event) => setData("attested", event.target.checked)}
               />
               <span>
-                <span className="font-semibold text-sky-800">I confirm these details.</span>{" "}
+                <span className="font-semibold text-neutral-900">I confirm these details.</span>{" "}
                 The company details above are accurate and I'm authorized to hire on its behalf. SkillBridge PH then checks the
                 business before marking it <strong>Verified</strong>; only verified companies can issue skill badges.
               </span>
@@ -215,7 +215,7 @@ export default function EmployerOnboarding() {
             Back
           </Button>
           <div className="flex items-center gap-3">
-            <a href="/dashboard" className="text-xs font-medium text-slate-500 hover:text-sky-700">
+            <a href="/dashboard" className="text-xs font-medium text-slate-500 hover:text-neutral-900">
               Skip for now
             </a>
             {stepIndex < steps.length - 1 ? (

@@ -49,10 +49,10 @@ function Reveal({ children, as: Tag = "div", style, delay = 0, from = "up", ...r
 
 const dashboardStyles = `
   .sbph-lift { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease; }
-  .sbph-lift:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(11, 29, 58, 0.16); }
-  .sbph-category-card:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(11, 29, 58, 0.16); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease; }
+  .sbph-lift:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(0,0,0, 0.16); }
+  .sbph-category-card:hover { transform: translateY(-6px); box-shadow: 0 22px 46px rgba(0,0,0, 0.16); transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease; }
   .sbph-faq { transition: box-shadow 0.3s ease, border-color 0.3s ease; }
-  .sbph-faq[open] { box-shadow: 0 16px 34px rgba(11, 29, 58, 0.1); }
+  .sbph-faq[open] { box-shadow: 0 16px 34px rgba(0,0,0, 0.1); }
   .sbph-footer-grid { grid-template-columns: 1.6fr 1fr 1fr 1.3fr; }
   @media (max-width: 860px) { .sbph-footer-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .sbph-footer-grid { grid-template-columns: 1fr; } }
@@ -71,8 +71,8 @@ const styles = {
     gap: "0",
     padding: "0",
     fontFamily: "'Source Sans 3', sans-serif",
-    background: `radial-gradient(circle at 12% 8%, rgba(14,165,233,0.16), transparent 40%),
-      radial-gradient(circle at 88% 12%, rgba(22,163,74,0.12), transparent 42%),
+    background: `radial-gradient(circle at 12% 8%, rgba(236,164,6,0.16), transparent 40%),
+      radial-gradient(circle at 88% 12%, rgba(236,164,6,0.12), transparent 42%),
       linear-gradient(180deg, ${COLORS.parchment} 0%, ${COLORS.cream} 45%, ${COLORS.parchmentDark} 100%)`,
   },
   hero: {
@@ -80,7 +80,7 @@ const styles = {
     padding: "clamp(56px, 8vh, 104px) clamp(24px, 5vw, 72px)",
     background: `linear-gradient(135deg, ${COLORS.cream} 0%, ${COLORS.parchment} 60%, ${COLORS.parchmentDark} 100%)`,
     color: COLORS.brownDeep,
-    boxShadow: "0 32px 70px rgba(11, 29, 58, 0.16)",
+    boxShadow: "0 32px 70px rgba(0,0,0, 0.16)",
     display: "grid",
     gap: "32px",
     position: "relative",
@@ -90,7 +90,7 @@ const styles = {
   heroGlow: {
     position: "absolute",
     inset: 0,
-    background: "radial-gradient(circle at 12% 8%, rgba(14,165,233,0.14), transparent 46%)",
+    background: "radial-gradient(circle at 12% 8%, rgba(236,164,6,0.14), transparent 46%)",
     pointerEvents: "none",
   },
   navLogo: {
@@ -135,12 +135,12 @@ const styles = {
     border: "none",
     borderRadius: "999px",
     padding: "12px 20px",
-    background: `linear-gradient(90deg, ${COLORS.success}, #166534)`,
+    background: `linear-gradient(90deg, ${COLORS.success}, #8A5A00)`,
     color: COLORS.cream,
     fontSize: "13px",
     fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 16px 32px rgba(22, 163, 74, 0.28)",
+    boxShadow: "0 16px 32px rgba(236,164,6, 0.28)",
   },
   ghostButton: {
     border: `1px solid ${COLORS.parchmentDeep}`,
@@ -208,8 +208,8 @@ const styles = {
   sectionBadge: {
     padding: "7px 16px",
     borderRadius: "999px",
-    background: "rgba(3,105,161,0.10)",
-    border: "1px solid rgba(3,105,161,0.24)",
+    background: "rgba(236,164,6,0.10)",
+    border: "1px solid rgba(236,164,6,0.24)",
     fontSize: 12,
     fontWeight: 700,
     letterSpacing: "0.32em",
@@ -344,7 +344,7 @@ const styles = {
     color: COLORS.cream,
     display: "grid",
     gap: "16px",
-    boxShadow: "0 24px 50px rgba(11, 29, 58, 0.32)",
+    boxShadow: "0 24px 50px rgba(0,0,0, 0.32)",
   },
   employerHeader: {
     display: "flex",
@@ -476,7 +476,7 @@ const styles = {
     borderRadius: "18px",
     padding: "20px",
     border: `1px solid ${COLORS.parchmentDeep}`,
-    background: `linear-gradient(135deg, ${COLORS.success} 0%, #166534 100%)`,
+    background: `linear-gradient(135deg, ${COLORS.success} 0%, #8A5A00 100%)`,
     color: COLORS.cream,
     display: "grid",
     gap: "10px",

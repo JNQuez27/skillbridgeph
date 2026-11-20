@@ -147,7 +147,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
       { preserveScroll: true, forceFormData: !!taskFile });
   };
 
-  const statusColor = (status) => ({ applied: "#15803D", shortlisted: "#15803D", interviewing: "#15803D", hired: "#15803D", invited: "#7C3AED", saved: "#0369A1", not_selected: "#475569" }[status] || "#B45309");
+  const statusColor = (status) => ({ applied: "#8A5A00", shortlisted: "#8A5A00", interviewing: "#8A5A00", hired: "#8A5A00", invited: "#7C3AED", saved: "#1A1A1A", not_selected: "#555555" }[status] || "#B45309");
 
   return (
     <div className="sbph-applicant-page" style={{ padding: "28px 32px", fontFamily: FONT_BODY, background: COLORS.parchment, minHeight: "calc(100vh - 64px)" }}>
@@ -156,7 +156,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
         background: `linear-gradient(120deg, ${COLORS.brownDeep}, ${COLORS.brownMid})`,
         borderRadius: 18, padding: "28px 32px", marginBottom: 24,
         display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap",
-        boxShadow: "0 20px 44px rgba(12, 74, 110, 0.22)",
+        boxShadow: "0 20px 44px rgba(0,0,0, 0.22)",
       }}>
         <div style={{
           width: 80, height: 80, borderRadius: "50%",
@@ -167,10 +167,10 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
         }}>{profile.initials || "U"}</div>
         <div style={{ flex: 1, minWidth: 220 }}>
           <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, color: "#fff", marginBottom: 4 }}>{profile.name}</h2>
-          <p style={{ color: "rgba(224,242,254,0.85)", fontSize: 13, marginBottom: 12 }}>{profile.headline}</p>
+          <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginBottom: 12 }}>{profile.headline}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {profile.stats?.badges > 0 && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(34,197,94,0.18)", color: COLORS.goldLight, padding: "4px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(236,164,6,0.18)", color: COLORS.goldLight, padding: "4px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
                 <IconCheck size={12} /> {profile.stats.badges} verified
               </span>
             )}
@@ -180,7 +180,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
               </span>
             )}
             {profile.location && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(224,242,254,0.8)", fontSize: 12 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,0.8)", fontSize: 12 }}>
                 <IconMapPin size={13} /> {profile.location}
               </span>
             )}
@@ -190,7 +190,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
           {[[profile.stats?.badges ?? 0, "Badges"], [profile.stats?.applied ?? 0, "Applied"], [profile.stats?.matches ?? 0, "Matches"]].map(([v, l]) => (
             <div key={l} style={{ textAlign: "center", background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 16px", minWidth: 76 }}>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, color: COLORS.goldLight, fontWeight: 700 }}>{v}</div>
-              <div style={{ fontSize: 12, color: "rgba(224,242,254,0.7)" }}>{l}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{l}</div>
             </div>
           ))}
         </div>
@@ -246,7 +246,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
                   <div key={s.name} style={{ background: `linear-gradient(135deg, ${COLORS.brownMid}, ${COLORS.info})`, borderRadius: 14, padding: "14px", textAlign: "center", minWidth: 120, flex: "1 1 120px", color: "#fff" }}>
                     <div style={{ display: "flex", justifyContent: "center", marginBottom: 6, color: COLORS.goldLight }}><IconAward size={24} /></div>
                     <div style={{ fontSize: 12, fontWeight: 700 }}>{s.badge || `${s.name} Verified`}</div>
-                    <div style={{ fontSize: 12, color: "rgba(224,242,254,0.85)", marginTop: 2 }}>{s.verifiedBy ? `by ${s.verifiedBy}` : s.name}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 2 }}>{s.verifiedBy ? `by ${s.verifiedBy}` : s.name}</div>
                     {s.verificationId && <div style={{ fontSize: 12, marginTop: 6, fontFamily: "ui-monospace, Consolas, monospace", letterSpacing: "0.04em", color: "#fff" }}>{s.verificationId}</div>}
                   </div>
                 ))}
@@ -409,7 +409,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
                       <div style={{ fontSize: 12, color: COLORS.textMid, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                         <span>Shows:</span>
                         {(c.linkedSkills || []).length === 0 ? <span style={{ color: COLORS.textLight }}>no skills linked</span>
-                          : c.linkedSkills.map((n) => <span key={n} style={{ padding: "2px 8px", borderRadius: 999, background: "#FDF0D0", color: "#075985", fontWeight: 600 }}>{n}</span>)}
+                          : c.linkedSkills.map((n) => <span key={n} style={{ padding: "2px 8px", borderRadius: 999, background: "#FDF0D0", color: "#333333", fontWeight: 600 }}>{n}</span>)}
                         <button type="button" style={{ ...ghostBtn, padding: "2px 8px", minHeight: 28 }} onClick={() => setEditingLinks({ id: c.id, linkedSkills: c.linkedSkills || [] })}>Edit skills</button>
                       </div>
                     ))}
@@ -550,7 +550,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 <span style={{ padding: "3px 9px", borderRadius: 999, background: COLORS.parchment, border: `1px solid ${COLORS.parchmentDeep}`, fontSize: 12, fontWeight: 600, color: COLORS.info }}>{c.openRoles} open role(s)</span>
                 {c.assessments > 0 && <span style={{ padding: "3px 9px", borderRadius: 999, background: COLORS.parchment, border: `1px solid ${COLORS.parchmentDeep}`, fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>{c.assessments} assessment(s)</span>}
-                {c.verified && <span style={{ padding: "3px 9px", borderRadius: 999, background: "rgba(22,163,74,0.12)", fontSize: 12, fontWeight: 700, color: COLORS.success }}>Verified</span>}
+                {c.verified && <span style={{ padding: "3px 9px", borderRadius: 999, background: "rgba(236,164,6,0.12)", fontSize: 12, fontWeight: 700, color: COLORS.success }}>Verified</span>}
               </div>
 
               {/* the employer's open roles, scored for this applicant */}
@@ -624,7 +624,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
                     {a.verified ? (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 5, color: COLORS.success, fontSize: 12, fontWeight: 700 }}><IconCheck size={14} /> Verified</span>
                     ) : a.attempts?.pending ? (
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#075985", background: COLORS.parchmentDark, padding: "6px 10px", borderRadius: 8 }}>Task submitted · waiting for {company.company} to score it</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#333333", background: COLORS.parchmentDark, padding: "6px 10px", borderRadius: 8 }}>Task submitted · waiting for {company.company} to score it</span>
                     ) : a.attempts?.locked ? (
                       <span style={{ padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: "#FEE2E2", color: "#B91C1C" }}>Unverified</span>
                     ) : a.attempts?.nextAttemptAt && !a.started ? (
@@ -702,8 +702,8 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
 
       {/* Take-assessment modal */}
       {activeAssessment && (
-        <div role="dialog" aria-modal="true" aria-label={activeAssessment.title} style={{ position: "fixed", inset: 0, background: "rgba(12,74,110,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 60 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.cream, borderRadius: 16, padding: "22px 24px", width: "min(620px, 100%)", maxHeight: "86vh", overflowY: "auto", border: `1px solid ${COLORS.parchmentDeep}`, boxShadow: "0 22px 60px rgba(12,74,110,0.28)", display: "grid", gap: 14 }}>
+        <div role="dialog" aria-modal="true" aria-label={activeAssessment.title} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 60 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.cream, borderRadius: 16, padding: "22px 24px", width: "min(620px, 100%)", maxHeight: "86vh", overflowY: "auto", border: `1px solid ${COLORS.parchmentDeep}`, boxShadow: "0 22px 60px rgba(0,0,0,0.28)", display: "grid", gap: 14 }}>
             <div>
               <div style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: COLORS.brownLight, fontWeight: 700 }}>Assessment · verifies {activeAssessment.skill}</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.brownDeep, marginTop: 4, fontFamily: FONT_DISPLAY }}>{activeAssessment.title}</div>
@@ -896,7 +896,7 @@ function StatusTracker({ app }) {
           <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.brownDeep }}>{app.title}</div>
           <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 3 }}>{[app.company, app.location].filter(Boolean).join(" · ")} · updated {app.updatedAt}{app.jobOpen ? "" : " · job closed"}</div>
         </div>
-        <span style={{ fontSize: 12, fontWeight: 700, color: dropped ? "#475569" : app.status === "hired" ? "#15803D" : COLORS.info }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: dropped ? "#555555" : app.status === "hired" ? "#8A5A00" : COLORS.info }}>
           {dropped ? "Not selected" : TRACK_STEPS[current]?.[1]}
         </span>
       </div>
@@ -942,11 +942,11 @@ const STATUS_LABEL = {
 };
 // Fig. 7, step 715: every skill on the card says where the applicant stands, in words (not color alone).
 const SKILL_STATE = {
-  verified: { label: "Verified", bg: "#F0FDF4", border: "#BBF7D0", color: "#166534" },
-  evidenced: { label: "Claimed + work sample", bg: "#FFF6E0", border: "#ECA406", color: "#075985" },
-  claimed: { label: "Claimed", bg: "#FFF9EB", border: "#F3D89B", color: "#075985" },
+  verified: { label: "Verified", bg: "#FFF3D6", border: "#F3D89B", color: "#8A5A00" },
+  evidenced: { label: "Claimed + work sample", bg: "#FFF6E0", border: "#ECA406", color: "#333333" },
+  claimed: { label: "Claimed", bg: "#FFF9EB", border: "#F3D89B", color: "#333333" },
   below: { label: "Below required level", bg: "#FFFBEB", border: "#FDE68A", color: "#92400E" },
-  missing: { label: "Missing", bg: "#F8FAFC", border: "#E2E8F0", color: "#475569" },
+  missing: { label: "Missing", bg: "#F8FAFC", border: "#E2E8F0", color: "#555555" },
 };
 const APPLIED_STAGES = ["applied", "shortlisted", "interviewing", "hired", "not_selected"];
 

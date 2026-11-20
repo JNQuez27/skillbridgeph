@@ -18,10 +18,10 @@ const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparen
 const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
 
 const STATUS = {
-  approved: { label: "Approved", bg: "rgba(22,163,74,0.14)", color: "#15803D" },
-  verified: { label: "Confirmed", bg: "rgba(22,163,74,0.14)", color: "#15803D" },
+  approved: { label: "Approved", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
+  verified: { label: "Confirmed", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
   rejected: { label: "Rejected", bg: "rgba(185,28,28,0.12)", color: "#B91C1C" },
-  pending: { label: "Pending", bg: "rgba(3,105,161,0.14)", color: "#0369A1" },
+  pending: { label: "Pending", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
 };
 
 // Patent Fig. 2, 232: the administrator portal moderates assessments.
@@ -68,7 +68,7 @@ function ModerationCard({ a }) {
           </div>
           <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 2 }}>{a.attempts} scored attempt(s) · {a.passed} passed</div>
         </div>
-        <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: suspended ? "rgba(185,28,28,0.12)" : "rgba(22,163,74,0.14)", color: suspended ? "#B91C1C" : "#15803D" }}>{a.status}</span>
+        <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: suspended ? "rgba(185,28,28,0.12)" : "rgba(236,164,6,0.14)", color: suspended ? "#B91C1C" : "#8A5A00" }}>{a.status}</span>
       </div>
       {a.flags.length > 0 && (
         <ul aria-label="Warnings" style={{ margin: 0, padding: "8px 12px 8px 28px", borderRadius: 10, background: "#FFFBEB", border: "1px solid #FDE68A", fontSize: 12, color: "#92400E" }}>
@@ -83,7 +83,7 @@ function ModerationCard({ a }) {
               {q.prompt}
               <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 12, color: COLORS.textMid }}>
                 {q.options.map((o, oi) => (
-                  <li key={oi} style={oi === q.answer ? { color: "#15803D", fontWeight: 700 } : undefined}>{o}{oi === q.answer ? " (correct)" : ""}</li>
+                  <li key={oi} style={oi === q.answer ? { color: "#8A5A00", fontWeight: 700 } : undefined}>{o}{oi === q.answer ? " (correct)" : ""}</li>
                 ))}
               </ul>
             </li>
@@ -243,7 +243,7 @@ export default function AdminView({ account, activeTab = "companies" }) {
         background: `linear-gradient(120deg, ${COLORS.brownDeep}, ${COLORS.brownMid})`,
         borderRadius: 18, padding: "28px 32px", marginBottom: 24,
         display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap",
-        boxShadow: "0 20px 44px rgba(12, 74, 110, 0.22)",
+        boxShadow: "0 20px 44px rgba(0,0,0, 0.22)",
       }}>
         <div style={{
           width: 80, height: 80, borderRadius: "50%",
@@ -253,7 +253,7 @@ export default function AdminView({ account, activeTab = "companies" }) {
         }}><IconClipboardCheck size={34} /></div>
         <div style={{ flex: 1, minWidth: 220 }}>
           <h2 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, color: "#fff", marginBottom: 4 }}>Verification desk</h2>
-          <p style={{ color: "rgba(224,242,254,0.85)", fontSize: 13, marginBottom: 12 }}>
+          <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginBottom: 12 }}>
             Each company and certificate is checked once, here, so no employer has to check it again.
           </p>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.12)", color: "#fff", padding: "4px 11px", borderRadius: 999, fontSize: 12, fontWeight: 600 }}>
@@ -264,7 +264,7 @@ export default function AdminView({ account, activeTab = "companies" }) {
           {[[employers.pending.length, "Companies"], [credentials.pending.length, "Certificates"], [decidedCount, "Decided"]].map(([v, l]) => (
             <div key={l} style={{ textAlign: "center", background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: "12px 16px", minWidth: 76 }}>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 22, color: COLORS.goldLight, fontWeight: 700 }}>{v}</div>
-              <div style={{ fontSize: 12, color: "rgba(224,242,254,0.7)" }}>{l}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{l}</div>
             </div>
           ))}
         </div>

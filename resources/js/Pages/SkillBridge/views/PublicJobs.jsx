@@ -30,7 +30,7 @@ export default function PublicJobs({ jobs }) {
       <div style={{ background: `linear-gradient(120deg, ${COLORS.brownDeep}, ${COLORS.brownMid})`, borderRadius: 18, padding: "26px 28px", marginBottom: 22, color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 26, fontWeight: 600, margin: 0 }}>Open jobs</h1>
-          <p style={{ margin: "6px 0 0", fontSize: 14, color: "rgba(224,242,254,0.88)" }}>
+          <p style={{ margin: "6px 0 0", fontSize: 14, color: "rgba(255,255,255,0.88)" }}>
             {jobs.length} open role(s), all from companies SkillBridge PH has verified. Sign up to see your match and apply with your verified badges.
           </p>
         </div>

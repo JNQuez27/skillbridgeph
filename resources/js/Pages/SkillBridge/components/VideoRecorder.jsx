@@ -97,7 +97,7 @@ export default function VideoRecorder({ onRecorded }) {
         <div style={{ position: "relative", maxWidth: 480 }}>
           <video ref={preview} autoPlay muted playsInline style={{ width: "100%", borderRadius: 10, background: "#000" }} />
           {phase === "recording" && current && (
-            <div role="status" aria-live="assertive" style={{ position: "absolute", left: 10, right: 10, bottom: 10, background: "rgba(12,74,110,0.92)", color: "#fff", borderRadius: 10, padding: "10px 12px" }}>
+            <div role="status" aria-live="assertive" style={{ position: "absolute", left: 10, right: 10, bottom: 10, background: "rgba(0,0,0,0.92)", color: "#fff", borderRadius: 10, padding: "10px 12px" }}>
               <div style={{ fontSize: 12, opacity: 0.85 }}>Prompt {prompts.length} of {prompts.length + remaining} · {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}</div>
               <div style={{ fontFamily: FONT_DISPLAY, fontSize: 18, fontWeight: 700 }}>{current.text}</div>
             </div>
