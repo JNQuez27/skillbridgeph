@@ -53,7 +53,7 @@ class AccountSafetyTest extends TestCase
         $this->signup()->assertSessionHasErrors('acceptPrivacy');
         $this->assertDatabaseCount('users', 0);
 
-        $this->signup(['acceptPrivacy' => true])->assertRedirect('/verify-email');
+        $this->signup(['acceptPrivacy' => true])->assertRedirect('/onboarding');
         $this->assertNotNull(User::first()->privacy_accepted_at);
         $this->get('/privacy')->assertOk();
     }

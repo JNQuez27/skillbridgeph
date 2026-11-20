@@ -34,6 +34,19 @@ class AuthenticatedSessionController extends Controller
         }
         RateLimiter::clear($key);
 
+        // The login page has Job seeker / Employer buttons. A right password on the
+        // wrong side signs nobody in; admins may use either button.
+        $chosen = $request->input('role');
+        $role = Auth::user()->role;
+        if (in_array($chosen, ['jobseeker', 'employer'], true) && $role !== 'admin' && $role !== $chosen) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => $role === 'employer'
+                    ? 'This is an employer account. Choose “Employer” above, then log in.'
+                    : 'This is a job seeker account. Choose “Job seeker” above, then log in.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return match (Auth::user()->role) {

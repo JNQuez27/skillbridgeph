@@ -16,7 +16,7 @@ after a quiet period can take up to a minute to wake up).
 | Role | What they can do |
 |---|---|
 | **Guest** | Browse open jobs from verified companies (`/jobs`); verify a shared badge link (`/verify/{id}`). |
-| **Applicant** | Confirm email, declare skills (saved as *pending*), take assessments and practical tasks to earn verified badges, link portfolio work samples to skills, browse and filter jobs with a per-job score breakdown, apply, accept or decline invitations, and track each application. |
+| **Applicant** | Set up a profile in 3 steps, declare skills (saved as *pending*), take assessments and practical tasks to earn verified badges, link portfolio work samples to skills, browse and filter jobs with a per-job score breakdown, apply, accept or decline invitations, and track each application. |
 | **Employer** | Submit DTI/SEC registration for verification, post jobs with per-skill weights and minimum levels, attach an assessment, see candidates ranked by proof, invite the top ten in one click, score practical tasks with a rubric, run structured interviews, and read hiring analytics. |
 | **Admin** | Approve or reject companies and TESDA/PRC certificates against the official registries, and moderate company assessments (suspend / reinstate with a reason). |
 
@@ -28,7 +28,7 @@ has its own feature test in [`tests/Feature`](tests/Feature) (`Figure2RolesTest`
 
 ## How a skill becomes proof
 
-1. **Sign up and confirm email** — new accounts confirm their address before onboarding.
+1. **Sign up** — choose Job seeker or Employer; the account works right away (no email confirmation step).
 2. **Declare skills** — every declared skill starts as **Pending**; the Skills tab
    recommends assessments that can verify them.
 3. **Earn the badge** — one of:
@@ -105,7 +105,7 @@ resources/js/Pages/
 │  ├─ views/                  # GeneralDashboard, PublicJobs, UserProfile, EmployerDashboard, AdminDashboard
 │  ├─ components/             # SkillBar, VideoRecorder, RegistryStatus, PreCheckList, Icons
 │  └─ styles/                 # design tokens + global CSS
-├─ JobSeeker/                 # sign up, login, email confirmation, password reset, onboarding
+├─ JobSeeker/                 # sign up, login (job seeker / employer), password reset, onboarding
 ├─ Employer/                  # employer onboarding
 └─ VerifyBadge.jsx            # public badge verification page
 

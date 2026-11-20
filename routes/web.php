@@ -7,7 +7,6 @@ use App\Http\Controllers\AssessmentAttemptController;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\CandidateHireController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CredentialController;
@@ -130,17 +129,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-// Authenticated app
-// Fig. 3, step 310: confirm the email address before anything else.
+// Authenticated app (no email confirmation step: accounts work right after sign-up)
 Route::middleware('auth')->group(function () {
-    Route::get('/verify-email', [EmailVerificationController::class, 'notice'])->name('verification.notice');
-    Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
-    Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])
-        ->middleware('throttle:6,1')->name('verification.send');
-});
-
-Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Applicant onboarding (build skill profile)

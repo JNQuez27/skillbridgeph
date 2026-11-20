@@ -23,7 +23,7 @@ class SignupOnboardingFlowTest extends TestCase
     public function test_a_full_name_is_split_and_an_employer_keeps_its_company_name(): void
     {
         $this->register(['role' => 'employer', 'fullName' => 'Paolo  de los Reyes', 'companyName' => 'Kubo Digital', 'email' => 'paolo@kubo.ph'])
-            ->assertRedirect('/verify-email');
+            ->assertRedirect('/employer/onboarding');
 
         $user = User::where('email', 'paolo@kubo.ph')->first();
         $this->assertSame(['Paolo de los', 'Reyes'], [$user->first_name, $user->surname]);

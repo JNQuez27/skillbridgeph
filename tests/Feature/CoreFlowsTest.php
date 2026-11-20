@@ -80,11 +80,11 @@ class CoreFlowsTest extends TestCase
         $form = fn ($role, $email) => ['role' => $role, 'firstName' => 'Ana', 'surname' => 'Cruz', 'email' => $email,
             'password' => 'secret123', 'password_confirmation' => 'secret123', 'acceptPrivacy' => true];
 
-        $this->post('/register', $form('jobseeker', 'ana@test.ph'))->assertRedirect('/verify-email');
+        $this->post('/register', $form('jobseeker', 'ana@test.ph'))->assertRedirect('/onboarding');
         $this->assertNotNull(User::where('email', 'ana@test.ph')->first()->applicantProfile);
 
         $this->post('/logout');
-        $this->post('/register', $form('employer', 'hr@test.ph'))->assertRedirect('/verify-email');
+        $this->post('/register', $form('employer', 'hr@test.ph'))->assertRedirect('/employer/onboarding');
         $this->assertNotNull(User::where('email', 'hr@test.ph')->first()->employerProfile);
     }
 
