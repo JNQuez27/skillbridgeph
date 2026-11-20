@@ -22,6 +22,8 @@ class ApplicantProfileController extends Controller
             // Fig. 8, unit 840: optional job preferences (empty = any).
             'preferredWorkSetups' => ['nullable', 'array'],
             'preferredWorkSetups.*' => ['in:'.implode(',', \App\Models\JobPost::WORK_SETUPS)],
+            'expectedSalary' => ['nullable', 'string', 'max:60'],
+            'availability' => ['nullable', 'string', 'max:60'],
             'preferredJobTypes' => ['nullable', 'array'],
             'preferredJobTypes.*' => ['in:'.implode(',', \App\Models\JobPost::JOB_TYPES)],
             // Self-reported skills. They match at a discount until verified.
@@ -46,6 +48,8 @@ class ApplicantProfileController extends Controller
             'experience_level' => $data['experienceLevel'] ?? $profile->experience_level,
             'desired_roles' => $data['desiredRoles'] ?? $profile->desired_roles,
             'preferred_work_setups' => array_key_exists('preferredWorkSetups', $data) ? array_values($data['preferredWorkSetups'] ?? []) : $profile->preferred_work_setups,
+            'expected_salary' => array_key_exists('expectedSalary', $data) ? $data['expectedSalary'] : $profile->expected_salary,
+            'availability' => array_key_exists('availability', $data) ? $data['availability'] : $profile->availability,
             'preferred_job_types' => array_key_exists('preferredJobTypes', $data) ? array_values($data['preferredJobTypes'] ?? []) : $profile->preferred_job_types,
             'education' => $data['education'] ?? $profile->education,
             'experience' => $data['experience'] ?? $profile->experience,

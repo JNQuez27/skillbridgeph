@@ -1,398 +1,202 @@
 import { useMemo, useState } from "react";
 import { router } from "@inertiajs/react";
+import AuthLayout from "./components/layout/AuthLayout";
 import Button from "./components/ui/Button";
-import Card from "./components/ui/Card";
 import Input from "./components/ui/Input";
-import Badge from "./components/ui/Badge";
-import ProgressBar from "./components/ui/ProgressBar";
 import FlashBanner from "./components/ui/FlashBanner";
-import { ToastProvider, useToast } from "./components/ui/ToastProvider";
 import { skillOptions } from "./data/jobSeekerData";
 
-const steps = [
-  { key: "basic", title: "Basic Info" },
-  { key: "skills", title: "Skills" },
-  { key: "education", title: "Education" },
-  { key: "experience", title: "Experience" },
-  { key: "review", title: "Review" },
+// Applicant profile setup in three steps (reference flow): skills, goals, proof.
+const STEPS = [
+  { title: "What are you great at?", subtitle: "Pick the skills you have. Each one starts as Pending until you verify it." },
+  { title: "Where do you want to go?", subtitle: "Tell us what a great opportunity looks like." },
+  { title: "Give your skills proof.", subtitle: "Upload a credential now, or verify a skill later." },
 ];
+const SETUPS = ["Hybrid", "Remote", "On-site"];
+const ISSUERS = [["tesda", "TESDA"], ["prc", "PRC"], ["other", "Other (school, course, employer)"]];
 
-function OnboardingContent() {
-  // Route is protected by `auth` middleware server-side, so no client guard needed.
-  const { addToast } = useToast();
-  const [stepIndex, setStepIndex] = useState(0);
-  const [skillSearch, setSkillSearch] = useState("");
-  const [customSkill, setCustomSkill] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    bio: "",
-    location: "",
-    desiredRoles: "",
-    skills: [],
-    education: { school: "", degree: "", year: "" },
-    experience: { title: "", company: "", description: "" },
-    experienceLevel: "",
-  });
-
-  const progress = Math.round(((stepIndex + 1) / steps.length) * 100);
-
-  const filteredSkills = useMemo(() => {
-    return skillOptions.filter((skill) =>
-      skill.toLowerCase().includes(skillSearch.toLowerCase())
-    );
-  }, [skillSearch]);
-
-  const toggleSkill = (skill) => {
-    setFormData((prev) => {
-      const exists = prev.skills.includes(skill);
-      return {
-        ...prev,
-        skills: exists
-          ? prev.skills.filter((item) => item !== skill)
-          : [...prev.skills, skill],
-      };
-    });
-  };
-
-  const addCustomSkill = () => {
-    const trimmed = customSkill.trim();
-    if (!trimmed) return;
-    if (!formData.skills.includes(trimmed)) {
-      setFormData((prev) => ({ ...prev, skills: [...prev.skills, trimmed] }));
-    }
-    setCustomSkill("");
-  };
-
-  const isStepValid = useMemo(() => {
-    const { bio, skills, education, location, desiredRoles, experienceLevel } = formData;
-    if (stepIndex === 0) return bio.length > 0 && bio.length <= 150 && location.trim().length > 0 && desiredRoles.trim().length > 0;
-    if (stepIndex === 1) return skills.length > 0;
-    if (stepIndex === 2) return education.school && education.degree && education.year;
-    if (stepIndex === 3) return experienceLevel.trim().length > 0;
-    return true;
-  }, [formData, stepIndex]);
-
-  const handleSubmit = () => {
-    setSubmitting(true);
-    // Everything collected here is saved. Skills are stored as self-reported;
-    // they become verified only through an assessment or an employer's review.
-    router.put(
-      "/applicant-profile",
-      {
-        bio: formData.bio.trim(),
-        location: formData.location.trim(),
-        experienceLevel: formData.experienceLevel || undefined,
-        headline: formData.experience.title.trim() || undefined,
-        desiredRoles: formData.desiredRoles.split(",").map((r) => r.trim()).filter(Boolean),
-        skills: formData.skills,
-        education: formData.education,
-        experience: formData.experience,
-      },
-      {
-        preserveScroll: true,
-        onSuccess: () => {
-          addToast({ message: "Profile saved. Next: verify your skills with the recommended assessments.", type: "success" });
-          router.visit("/dashboard?tab=skills");
-        },
-        onError: (errors) => {
-          const first = Object.values(errors || {})[0];
-          addToast({ message: first || "Could not save your profile. Please review your answers.", type: "error" });
-        },
-        onFinish: () => setSubmitting(false),
-      }
-    );
-  };
-
+function Chip({ on, onClick, children }) {
   return (
-    <div className="min-h-screen bg-[#FFF6E0] px-4 py-8 font-sans text-neutral-900">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <div>
-          <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-neutral-900">SkillBridge PH</p>
-          <h1 className="mt-2 font-display text-3xl font-semibold text-neutral-900">Applicant Onboarding</h1>
-          <p className="mt-2 text-sm text-slate-500">Complete your profile to get matched with more opportunities.</p>
-        </div>
-        <FlashBanner />
-
-        <Card className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-neutral-900">Step {stepIndex + 1} of {steps.length}</p>
-              <p className="text-xs text-slate-500">{steps[stepIndex].title}</p>
-            </div>
-            <div className="w-full max-w-xs">
-              <ProgressBar value={progress} />
-              <p className="mt-2 text-xs text-slate-500">{progress}% complete</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {steps.map((step, index) => (
-              <Badge key={step.key} tone={index === stepIndex ? "info" : "default"}>
-                {step.title}
-              </Badge>
-            ))}
-          </div>
-        </Card>
-
-        {stepIndex === 0 && (
-          <Card className="space-y-4">
-            <Input
-              id="onboard-bio"
-              label="Short bio"
-              placeholder="Tell recruiters about your strengths"
-              value={formData.bio}
-              onChange={(event) => setFormData((prev) => ({ ...prev, bio: event.target.value }))}
-              hint={`${formData.bio.length}/150 characters`}
-              error={formData.bio.length > 150 ? "Max 150 characters" : ""}
-            />
-            <Input
-              id="onboard-location"
-              label="Location"
-              placeholder="City, Region"
-              value={formData.location}
-              onChange={(event) => setFormData((prev) => ({ ...prev, location: event.target.value }))}
-            />
-            <Input
-              id="onboard-roles"
-              label="Roles you want (comma-separated)"
-              placeholder="Frontend Developer, Barista"
-              value={formData.desiredRoles}
-              onChange={(event) => setFormData((prev) => ({ ...prev, desiredRoles: event.target.value }))}
-              hint="Matching jobs are flagged to your account automatically."
-            />
-          </Card>
-        )}
-
-        {stepIndex === 1 && (
-          <Card className="space-y-4">
-            <Input
-              id="skill-search"
-              label="Search skills"
-              placeholder="Search skills"
-              value={skillSearch}
-              onChange={(event) => setSkillSearch(event.target.value)}
-            />
-            <div className="flex flex-wrap gap-2">
-              {filteredSkills.map((skill) => (
-                <button
-                  key={skill}
-                  type="button"
-                  onClick={() => toggleSkill(skill)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${formData.skills.includes(skill) ? "border-[#ECA406] bg-[#FFF6E0] text-neutral-900" : "border-slate-200 bg-white text-slate-600"}`}
-                >
-                  {skill}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-              <Input
-                id="custom-skill"
-                label="Add custom skill"
-                placeholder="e.g. Event styling"
-                value={customSkill}
-                onChange={(event) => setCustomSkill(event.target.value)}
-              />
-              <Button type="button" variant="secondary" onClick={addCustomSkill}>
-                Add skill
-              </Button>
-            </div>
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900" role="note">
-              <strong>Every skill you add is saved as Pending.</strong> It stays pending until you verify it, by passing an
-              assessment or having your work reviewed. Employers see verified skills first.
-            </div>
-            {formData.skills.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold text-neutral-900">Your skills ({formData.skills.length})</p>
-                <ul className="mt-2 flex flex-wrap gap-2" aria-label="Skills you added">
-                  {formData.skills.map((skill) => (
-                    <li key={skill} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-3 pr-1 text-xs font-semibold text-neutral-900">
-                      {skill}
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">Pending</span>
-                      <button type="button" onClick={() => toggleSkill(skill)} aria-label={`Remove ${skill}`}
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">×</button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </Card>
-        )}
-
-        {stepIndex === 2 && (
-          <Card className="space-y-4">
-            <Input
-              id="education-school"
-              label="School name"
-              placeholder="University name"
-              value={formData.education.school}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  education: { ...prev.education, school: event.target.value },
-                }))
-              }
-            />
-            <Input
-              id="education-degree"
-              label="Course or degree"
-              placeholder="Course or degree"
-              value={formData.education.degree}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  education: { ...prev.education, degree: event.target.value },
-                }))
-              }
-            />
-            <Input
-              id="education-year"
-              label="Year completed"
-              placeholder="2025"
-              value={formData.education.year}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  education: { ...prev.education, year: event.target.value },
-                }))
-              }
-            />
-          </Card>
-        )}
-
-        {stepIndex === 3 && (
-          <Card className="space-y-4">
-            <Input
-              id="experience-title"
-              label="Job title"
-              placeholder="Sales Associate"
-              value={formData.experience.title}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  experience: { ...prev.experience, title: event.target.value },
-                }))
-              }
-            />
-            <Input
-              id="experience-company"
-              label="Company name"
-              placeholder="Company name"
-              value={formData.experience.company}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  experience: { ...prev.experience, company: event.target.value },
-                }))
-              }
-            />
-            <Input
-              id="experience-description"
-              label="Description"
-              placeholder="Highlight your key responsibilities"
-              value={formData.experience.description}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  experience: { ...prev.experience, description: event.target.value },
-                }))
-              }
-            />
-            <label className="flex flex-col gap-2 text-sm text-slate-600">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Experience level</span>
-              <select
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-neutral-900"
-                value={formData.experienceLevel}
-                onChange={(event) => setFormData((prev) => ({ ...prev, experienceLevel: event.target.value }))}
-              >
-                <option value="">Select level</option>
-                <option value="Entry">Entry</option>
-                <option value="Mid">Mid</option>
-                <option value="Senior">Senior</option>
-              </select>
-            </label>
-          </Card>
-        )}
-
-        {stepIndex === 4 && (
-          <Card className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-neutral-900">Basic Info</p>
-                <p className="text-xs text-slate-500">{formData.bio}</p>
-                <p className="mt-1 text-xs text-slate-500">{formData.location} · wants: {formData.desiredRoles}</p>
-              </div>
-              <Button type="button" variant="ghost" onClick={() => setStepIndex(0)}>
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-neutral-900">Skills</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {formData.skills.map((skill) => (
-                    <Badge key={skill} tone="info">{skill} · Pending</Badge>
-                  ))}
-                </div>
-              </div>
-              <Button type="button" variant="ghost" onClick={() => setStepIndex(1)}>
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-neutral-900">Education</p>
-                <p className="text-xs text-slate-500">
-                  {formData.education.school} - {formData.education.degree} ({formData.education.year})
-                </p>
-              </div>
-              <Button type="button" variant="ghost" onClick={() => setStepIndex(2)}>
-                Edit
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-neutral-900">Experience</p>
-                <p className="text-xs text-slate-500">{formData.experience.title || "Optional"}</p>
-                <p className="mt-1 text-xs text-slate-500">Level: {formData.experienceLevel || "-"}</p>
-              </div>
-              <Button type="button" variant="ghost" onClick={() => setStepIndex(3)}>
-                Edit
-              </Button>
-            </div>
-            <p className="rounded-xl border border-[#F3D89B] bg-[#FFF6E0]/70 p-3 text-xs text-slate-600">
-              Your skills are saved as <strong>self-reported</strong>. To get them verified, take a company
-              assessment or upload evidence from your dashboard. Verified skills rank you higher with employers.
-            </p>
-          </Card>
-        )}
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={stepIndex === 0}
-            onClick={() => setStepIndex((prev) => Math.max(0, prev - 1))}
-          >
-            Back
-          </Button>
-          {stepIndex < steps.length - 1 ? (
-            <Button type="button" disabled={!isStepValid} onClick={() => setStepIndex((prev) => prev + 1)}>
-              Continue
-            </Button>
-          ) : (
-            <Button type="button" loading={submitting} onClick={handleSubmit}>
-              Submit profile
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
+    <button type="button" onClick={onClick} aria-pressed={on}
+      className={`min-h-9 rounded-full border px-3 text-xs font-semibold transition ${on ? "border-[#ECA406] bg-[#FFF3D6] text-neutral-900" : "border-neutral-200 bg-white text-neutral-700 hover:border-[#ECA406]"}`}>
+      {on ? "✓ " : "+ "}{children}
+    </button>
   );
 }
 
-export default function Onboarding() {
+export default function Onboarding({ suggestedSkills = [], profile = {} }) {
+  const [step, setStep] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [search, setSearch] = useState("");
+  const [skills, setSkills] = useState(profile.skills || []);
+  const [goals, setGoals] = useState({
+    desiredRole: profile.desiredRole || "", location: profile.location || "", workSetups: profile.workSetups || [],
+    expectedSalary: profile.expectedSalary || "", availability: profile.availability || "",
+  });
+  const [proof, setProof] = useState({ file: null, issuer: "tesda", qualification: "", credentialId: "", consent: false });
+
+  const has = (name) => skills.some((s) => s.toLowerCase() === name.toLowerCase());
+  const toggleSkill = (name) => setSkills((prev) => (prev.some((s) => s.toLowerCase() === name.toLowerCase())
+    ? prev.filter((s) => s.toLowerCase() !== name.toLowerCase()) : [...prev, name]));
+  const suggestions = useMemo(() => {
+    const pool = [...new Set([...suggestedSkills, ...skillOptions])];
+    const q = search.trim().toLowerCase();
+    return (q ? pool.filter((s) => s.toLowerCase().includes(q)) : pool.slice(0, 12)).slice(0, 12);
+  }, [search, suggestedSkills]);
+  const canAddTyped = search.trim() && !has(search.trim()) && !suggestions.some((s) => s.toLowerCase() === search.trim().toLowerCase());
+
+  const go = (next) => { setErrors({}); setStep(next); window.scrollTo(0, 0); };
+
+  // Steps 1-2 are saved together, so the profile is complete before the optional proof step.
+  const saveProfile = () => {
+    setBusy(true);
+    router.put("/applicant-profile", {
+      skills,
+      desiredRoles: goals.desiredRole.trim() ? [goals.desiredRole.trim()] : [],
+      location: goals.location.trim() || undefined,
+      preferredWorkSetups: goals.workSetups,
+      expectedSalary: goals.expectedSalary.trim() || null,
+      availability: goals.availability.trim() || null,
+    }, {
+      preserveScroll: true,
+      onSuccess: () => go(2),
+      onError: (e) => { setErrors(e); if (e.skills) setStep(0); },
+      onFinish: () => setBusy(false),
+    });
+  };
+
+  const registry = proof.issuer === "other" ? null : proof.issuer;
+  const uploadProof = () => {
+    setBusy(true);
+    router.post("/credentials", {
+      type: "certificate",
+      title: registry ? proof.qualification : (proof.qualification || proof.file?.name),
+      file: proof.file,
+      registry: registry || "",
+      registryNumber: registry ? proof.credentialId : "",
+      registryQualification: registry ? proof.qualification : "",
+      registryConsent: registry ? proof.consent : false,
+    }, {
+      forceFormData: true,
+      onSuccess: () => router.visit("/dashboard?tab=skills"),
+      onError: setErrors,
+      onFinish: () => setBusy(false),
+    });
+  };
+  const proofReady = proof.file && (!registry || (proof.qualification.trim() && proof.credentialId.trim() && proof.consent));
+
   return (
-    <ToastProvider>
-      <OnboardingContent />
-    </ToastProvider>
+    <AuthLayout eyebrow={null} title={STEPS[step].title} subtitle={STEPS[step].subtitle} top={
+      <div className="mb-6">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500">Your profile / Step {step + 1} of 3</p>
+        <div className="mt-3 grid grid-cols-3 gap-2" aria-hidden="true">
+          {STEPS.map((_, i) => <span key={i} className={`h-1 rounded-full ${i <= step ? "bg-[#ECA406]" : "bg-neutral-200"}`} />)}
+        </div>
+      </div>
+    }>
+      <FlashBanner />
+
+      {step === 0 && (
+        <div className="flex flex-col gap-5">
+          <Input id="skill-search" label="Find a skill" placeholder="Search skills, tools, or strengths" value={search}
+            onChange={(e) => setSearch(e.target.value)} />
+          <div>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{search ? "Matching skills" : "Skills employers are asking for"}</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestions.map((s) => <Chip key={s} on={has(s)} onClick={() => toggleSkill(s)}>{s}</Chip>)}
+              {canAddTyped && <Chip on={false} onClick={() => { toggleSkill(search.trim()); setSearch(""); }}>Add “{search.trim()}”</Chip>}
+            </div>
+            {skills.filter((s) => !suggestions.some((x) => x.toLowerCase() === s.toLowerCase())).length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {skills.filter((s) => !suggestions.some((x) => x.toLowerCase() === s.toLowerCase())).map((s) => <Chip key={s} on onClick={() => toggleSkill(s)}>{s}</Chip>)}
+              </div>
+            )}
+          </div>
+          <div className="rounded-2xl bg-[#FFF6E0] p-5">
+            <p className="font-display text-base font-bold text-neutral-900">{skills.length} skill{skills.length === 1 ? "" : "s"} selected</p>
+            <p className="mt-1 text-xs text-neutral-700">New skills start as declared (Pending). Pass an assessment or have your work reviewed to turn them into verified badges.</p>
+          </div>
+          {errors.skills && <p role="alert" className="text-xs text-rose-600">{errors.skills}</p>}
+          <Button type="button" className="w-fit px-6" disabled={skills.length === 0} onClick={() => go(1)}>Continue →</Button>
+        </div>
+      )}
+
+      {step === 1 && (
+        <div className="flex flex-col gap-4">
+          <Input id="goal-role" label="Desired role" placeholder="Customer Success Associate" value={goals.desiredRole}
+            onChange={(e) => setGoals({ ...goals, desiredRole: e.target.value })} error={errors.desiredRoles} />
+          <Input id="goal-location" label="Location" placeholder="Makati, Metro Manila" value={goals.location}
+            onChange={(e) => setGoals({ ...goals, location: e.target.value })} error={errors.location} />
+          <fieldset>
+            <legend className="mb-2 text-sm font-semibold text-neutral-900">Work arrangement</legend>
+            <div className="flex flex-wrap gap-2">
+              {SETUPS.map((s) => (
+                <Chip key={s} on={goals.workSetups.includes(s)}
+                  onClick={() => setGoals((g) => ({ ...g, workSetups: g.workSetups.includes(s) ? g.workSetups.filter((x) => x !== s) : [...g.workSetups, s] }))}>{s}</Chip>
+              ))}
+            </div>
+          </fieldset>
+          <Input id="goal-salary" label="Expected monthly salary" placeholder="₱25,000 – ₱35,000" value={goals.expectedSalary}
+            onChange={(e) => setGoals({ ...goals, expectedSalary: e.target.value })} error={errors.expectedSalary} />
+          <Input id="goal-availability" label="Availability" placeholder="Ready within 30 days" value={goals.availability}
+            onChange={(e) => setGoals({ ...goals, availability: e.target.value })} error={errors.availability} />
+          <div className="flex gap-3">
+            <Button type="button" variant="secondary" onClick={() => go(0)}>Back</Button>
+            <Button type="button" className="px-6" loading={busy} disabled={busy} onClick={saveProfile}>Continue →</Button>
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className="flex flex-col gap-4">
+          <label className="flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-dashed border-[#ECA406] bg-[#FFF6E0] p-6 text-neutral-900">
+            <span aria-hidden="true" className="text-xl font-bold">↑</span>
+            <span className="font-display text-base font-bold">Add a certificate or credential</span>
+            <span className="text-xs text-neutral-600">PDF, JPG, or PNG · up to 10 MB<br />TESDA, course certificates, or training records.</span>
+            <span className="mt-2 w-fit rounded-full border border-neutral-200 bg-white px-4 py-2 text-xs font-semibold">Choose document</span>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="sr-only"
+              onChange={(e) => setProof({ ...proof, file: e.target.files?.[0] || null })} />
+          </label>
+          {errors.file && <p role="alert" className="text-xs text-rose-600">{errors.file}</p>}
+
+          {proof.file && (
+            <>
+              <div className="rounded-2xl border border-neutral-200 p-4">
+                <p className="break-all text-sm font-semibold text-neutral-900">{proof.file.name}</p>
+                <p className="mt-1 text-xs text-neutral-500">{(proof.file.size / 1048576).toFixed(1)} MB · Ready to submit</p>
+              </div>
+              <label className="flex flex-col gap-2 text-sm">
+                <span className="font-semibold text-neutral-900">Issued by</span>
+                <select value={proof.issuer} onChange={(e) => setProof({ ...proof, issuer: e.target.value })}
+                  className="min-h-11 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-900 focus:border-[#ECA406] focus:outline-none focus:ring-2 focus:ring-[#ECA406]/30">
+                  {ISSUERS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </label>
+              <Input id="proof-qualification" label={registry ? "Qualification" : "Certificate title"} placeholder={registry === "prc" ? "Registered Nurse" : "Customer Service NC II"}
+                value={proof.qualification} onChange={(e) => setProof({ ...proof, qualification: e.target.value })}
+                error={errors.registryQualification || errors.title} />
+              {registry && (
+                <>
+                  <Input id="proof-id" label={registry === "prc" ? "License number" : "Certificate number"} placeholder="e.g. 2026-01482-0001"
+                    value={proof.credentialId} onChange={(e) => setProof({ ...proof, credentialId: e.target.value })} error={errors.registryNumber} />
+                  <label className="flex items-start gap-3 text-xs text-neutral-700">
+                    <input type="checkbox" className="mt-0.5 h-4 w-4 accent-[#ECA406]" checked={proof.consent}
+                      onChange={(e) => setProof({ ...proof, consent: e.target.checked })} />
+                    <span>I agree that SkillBridge PH checks this number with the {registry.toUpperCase()} registry. Approved, it becomes a registry-verified badge.</span>
+                  </label>
+                </>
+              )}
+            </>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <Button type="button" variant="secondary" onClick={() => go(1)}>Back</Button>
+            <Button type="button" className="px-6" loading={busy} disabled={busy || !proofReady} onClick={uploadProof}>Submit and finish →</Button>
+            <Button type="button" variant="ghost" onClick={() => router.visit("/dashboard?tab=skills")}>Skip, verify later</Button>
+          </div>
+        </div>
+      )}
+    </AuthLayout>
   );
 }

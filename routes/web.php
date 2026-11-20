@@ -148,7 +148,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         if ($request->user()->role === 'employer') {
             return redirect('/employer/onboarding');
         }
-        return Inertia::render('JobSeeker/Onboarding');
+        $profile = $request->user()->applicantProfileOrCreate()->load('skills');
+
+        // Step 1 suggests the skills open jobs actually ask for, most in demand first.
+        return Inertia::render('JobSeeker/Onboarding', [
+            'suggestedSkills' => JobPost::open()->get()
+                ->flatMap(fn ($j) => array_merge($j->required_skills ?? [], $j->preferred_skills ?? []))
+                ->countBy()->sortDesc()->keys()->take(12)->values(),
+            'profile' => [
+                'skills' => $profile->skills->where('verification_status', '!=', 'unverified')->pluck('name')->values(),
+                'desiredRole' => $profile->desired_roles[0] ?? '',
+                'location' => $profile->location === 'Philippines' ? '' : ($profile->location ?? ''),
+                'workSetups' => $profile->preferred_work_setups ?? [],
+                'expectedSalary' => $profile->expected_salary ?? '',
+                'availability' => $profile->availability ?? '',
+            ],
+        ]);
     })->name('onboarding');
 
     // Employer onboarding (company background & verification)

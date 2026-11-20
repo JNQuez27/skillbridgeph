@@ -310,6 +310,8 @@ class DashboardController extends Controller
                 'desiredRoles' => $profile->desired_roles ?? [],
                 'preferredWorkSetups' => $profile->preferred_work_setups ?? [],
                 'preferredJobTypes' => $profile->preferred_job_types ?? [],
+                'expectedSalary' => $profile->expected_salary,
+                'availability' => $profile->availability,
                 'bio' => $profile->bio,
                 'education' => $profile->education ?? [],
                 'experience' => $profile->experience ?? [],

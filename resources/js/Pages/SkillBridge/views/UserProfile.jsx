@@ -111,6 +111,8 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
     desiredRoles: (profile.desiredRoles || []).join(", "),
     preferredWorkSetups: profile.preferredWorkSetups || [],
     preferredJobTypes: profile.preferredJobTypes || [],
+    expectedSalary: profile.expectedSalary || "",
+    availability: profile.availability || "",
     skills: pendingSkills.map((s) => s.name).join(", "),
     education: { school: "", degree: "", year: "", ...(profile.education || {}) },
     experience: { title: "", company: "", description: "", ...(profile.experience || {}) },
@@ -659,6 +661,12 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
               <Labeled label="Location" error={settings.errors.location}>
                 <input type="text" value={settings.data.location} onChange={(e) => settings.setData("location", e.target.value)} placeholder="Davao City" style={inputStyle} />
+              </Labeled>
+              <Labeled label="Expected monthly salary" error={settings.errors.expectedSalary}>
+                <input type="text" value={settings.data.expectedSalary} onChange={(e) => settings.setData("expectedSalary", e.target.value)} placeholder="₱25,000 – ₱35,000" style={inputStyle} />
+              </Labeled>
+              <Labeled label="Availability" error={settings.errors.availability}>
+                <input type="text" value={settings.data.availability} onChange={(e) => settings.setData("availability", e.target.value)} placeholder="Ready within 30 days" style={inputStyle} />
               </Labeled>
               <Labeled label="Experience level">
                 <select value={settings.data.experienceLevel} onChange={(e) => settings.setData("experienceLevel", e.target.value)} style={inputStyle}>

@@ -17,6 +17,8 @@ class ApplicantProfile extends Model
         'experience',
         'preferred_work_setups',
         'preferred_job_types',
+        'expected_salary',
+        'availability',
     ];
 
     protected $casts = [
