@@ -36,8 +36,8 @@ const formatBytes = (bytes) => {
 
 const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
 const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
-const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
-const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
+const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, whiteSpace: "nowrap" };
+const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, whiteSpace: "nowrap" };
 const linkBtn = { border: "none", background: "none", padding: 0, color: COLORS.info, fontWeight: 600, cursor: "pointer", textDecoration: "underline", fontSize: "inherit", fontFamily: "inherit" };
 const legendStyle = { fontFamily: FONT_DISPLAY, fontSize: 15, fontWeight: 600, color: COLORS.brownDeep, padding: "0 6px" };
 const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
@@ -412,7 +412,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
                         <span>Shows:</span>
                         {(c.linkedSkills || []).length === 0 ? <span style={{ color: COLORS.textLight }}>no skills linked</span>
                           : c.linkedSkills.map((n) => <span key={n} style={{ padding: "2px 8px", borderRadius: 999, background: "#FDF0D0", color: "#333333", fontWeight: 600 }}>{n}</span>)}
-                        <button type="button" style={{ ...ghostBtn, padding: "2px 8px", minHeight: 28 }} onClick={() => setEditingLinks({ id: c.id, linkedSkills: c.linkedSkills || [] })}>Edit skills</button>
+                        <button type="button" style={{ ...ghostBtn, padding: "6px 12px", minHeight: 36 }} onClick={() => setEditingLinks({ id: c.id, linkedSkills: c.linkedSkills || [] })}>Edit skills</button>
                       </div>
                     ))}
                     {(c.extractedSkills || []).length > 0 && (

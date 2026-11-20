@@ -1,8 +1,11 @@
 // Lightweight line icons (Lucide-style) used across the SkillBridge account UI.
 // Stroke uses currentColor so icons inherit text color.
-function Svg({ size = 16, children, ...props }) {
+// Tailwind's preflight makes every <svg> display:block, which pushes an inline
+// icon onto its own line (e.g. the check above "Front Desk · Verified").
+function Svg({ size = 16, children, style, ...props }) {
   return (
     <svg
+      style={{ display: "inline-block", flexShrink: 0, ...style }}
       width={size}
       height={size}
       viewBox="0 0 24 24"

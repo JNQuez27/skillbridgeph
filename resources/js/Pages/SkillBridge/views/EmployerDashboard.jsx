@@ -25,8 +25,8 @@ const sectionMeta = {
 
 const cardStyle = { background: COLORS.cream, borderRadius: 14, padding: "22px 20px", border: `1px solid ${COLORS.parchmentDeep}` };
 const headingStyle = { fontFamily: FONT_DISPLAY, fontSize: 17, fontWeight: 600, color: COLORS.brownDeep, marginBottom: 14 };
-const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, display: "inline-flex", alignItems: "center", gap: 6 };
-const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY };
+const primaryBtn = { padding: "8px 14px", borderRadius: 8, background: COLORS.accent, border: "none", color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6 };
+const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparent", border: `1px solid ${COLORS.parchmentDeep}`, color: COLORS.brownDeep, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: FONT_BODY, whiteSpace: "nowrap" };
 const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
 
 const companyInitials = (name) => {
@@ -339,7 +339,7 @@ function SkillGap({ gap, unassessed, onCreate }) {
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", fontSize: 12, color: COLORS.textLight }}>
                 <span>{g.missing} missing · {g.claimed} claimed only · {g.below} below level</span>
                 {unassessed.has(g.skill.toLowerCase()) && g.lacking > 0 && (
-                  <button type="button" onClick={() => onCreate(g.skill)} style={{ ...ghostBtn, padding: "2px 10px", minHeight: 28 }}>Create an assessment for {g.skill}</button>
+                  <button type="button" onClick={() => onCreate(g.skill)} style={{ ...ghostBtn, padding: "6px 12px", minHeight: 36 }}>Create an assessment for {g.skill}</button>
                 )}
               </div>
             </li>
