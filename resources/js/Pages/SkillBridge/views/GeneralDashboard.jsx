@@ -296,10 +296,7 @@ const styles = {
     fontWeight: 700,
   },
   jobMatch: {
-    padding: "4px 8px",
-    borderRadius: "999px",
-    background: COLORS.accent,
-    color: "#FFFFFF",
+    color: COLORS.accent,
     fontSize: 12,
     fontWeight: 700,
   },
