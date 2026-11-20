@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { router } from "@inertiajs/react";
 import AuthLayout from "./components/layout/AuthLayout";
 import Button from "./components/ui/Button";
 import Input from "./components/ui/Input";
 import FlashBanner from "./components/ui/FlashBanner";
-import { skillGroups, skillOptions } from "./data/jobSeekerData";
+import SkillFieldPicker from "./components/SkillFieldPicker";
 
 // Applicant profile setup in three steps (reference flow): skills, goals, proof.
 const STEPS = [
@@ -28,45 +28,12 @@ export default function Onboarding({ suggestedSkills = [], profile = {} }) {
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState({});
-  const [search, setSearch] = useState("");
   const [skills, setSkills] = useState(profile.skills || []);
-  // The applicant picks a field first; only that field's skills are offered, so an IT
-  // applicant never sees Barista and a cafe worker never sees Laravel.
-  const [group, setGroup] = useState(() => {
-    const own = (profile.skills || []).map((s) => s.toLowerCase());
-    const best = skillGroups.map((g) => [g.name, g.skills.filter((s) => own.includes(s.toLowerCase())).length]).sort((a, b) => b[1] - a[1])[0];
-    return best && best[1] > 0 ? best[0] : null;
-  });
-  const fieldSkills = useMemo(() => {
-    const list = skillGroups.find((g) => g.name === group)?.skills || [];
-    const hot = new Set(suggestedSkills.map((s) => s.toLowerCase()));
-    return [...list].sort((a, b) => hot.has(b.toLowerCase()) - hot.has(a.toLowerCase())); // in-demand first
-  }, [group, suggestedSkills]);
-  const pickField = (name) => {
-    const keep = skillGroups.find((g) => g.name === name).skills.map((s) => s.toLowerCase());
-    const known = skillOptions.map((s) => s.toLowerCase());
-    // Drop picks from the old field; typed-in custom skills stay.
-    setSkills((prev) => prev.filter((s) => keep.includes(s.toLowerCase()) || !known.includes(s.toLowerCase())));
-    setGroup(name);
-    setSearch("");
-  };
   const [goals, setGoals] = useState({
     desiredRole: profile.desiredRole || "", location: profile.location || "", workSetups: profile.workSetups || [],
     expectedSalary: profile.expectedSalary || "", availability: profile.availability || "",
   });
   const [proof, setProof] = useState({ file: null, issuer: "tesda", qualification: "", credentialId: "", consent: false });
-
-  const has = (name) => skills.some((s) => s.toLowerCase() === name.toLowerCase());
-  const toggleSkill = (name) => setSkills((prev) => (prev.some((s) => s.toLowerCase() === name.toLowerCase())
-    ? prev.filter((s) => s.toLowerCase() !== name.toLowerCase()) : [...prev, name]));
-  const suggestions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return q ? fieldSkills.filter((s) => s.toLowerCase().includes(q)) : fieldSkills;
-  }, [search, fieldSkills]);
-  const typed = search.trim().toLowerCase();
-  // A skill that belongs to another field (e.g. Barista while in IT) can't be typed in either.
-  const otherField = typed && !fieldSkills.some((s) => s.toLowerCase() === typed) && skillOptions.some((s) => s.toLowerCase() === typed);
-  const canAddTyped = typed && !otherField && !has(search.trim()) && !suggestions.some((s) => s.toLowerCase() === typed);
 
   const go = (next) => { setErrors({}); setStep(next); window.scrollTo(0, 0); };
 
@@ -121,36 +88,7 @@ export default function Onboarding({ suggestedSkills = [], profile = {} }) {
 
       {step === 0 && (
         <div className="flex flex-col gap-5">
-          <div>
-            <p className="mb-3 text-sm font-semibold text-neutral-900">What field do you work in?</p>
-            <div role="radiogroup" aria-label="Your field" className="flex flex-wrap gap-2">
-              {skillGroups.map((g) => (
-                <button key={g.name} type="button" role="radio" aria-checked={group === g.name} onClick={() => pickField(g.name)}
-                  className={`min-h-9 rounded-full px-3 text-xs font-bold transition ${group === g.name ? "bg-[#ECA406] text-white" : "bg-[#FFF6E0] text-neutral-900 hover:bg-[#FDF0D0]"}`}>
-                  {g.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          {group && (
-            <>
-              <Input id="skill-search" label={`Find a skill in ${group}`} placeholder="Search skills, tools, or strengths" value={search}
-                onChange={(e) => setSearch(e.target.value)} />
-              <div>
-                <p className="mb-3 text-sm font-semibold text-neutral-900">{search ? "Matching skills" : `${group} skills`}</p>
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.map((s) => <Chip key={s} on={has(s)} onClick={() => toggleSkill(s)}>{s}</Chip>)}
-                  {canAddTyped && <Chip on={false} onClick={() => { toggleSkill(search.trim()); setSearch(""); }}>Add “{search.trim()}”</Chip>}
-                </div>
-                {otherField && <p className="mt-2 text-xs text-neutral-600">“{search.trim()}” belongs to another field. Change your field above to add it.</p>}
-                {skills.filter((s) => !suggestions.some((x) => x.toLowerCase() === s.toLowerCase())).length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {skills.filter((s) => !suggestions.some((x) => x.toLowerCase() === s.toLowerCase())).map((s) => <Chip key={s} on onClick={() => toggleSkill(s)}>{s}</Chip>)}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          <SkillFieldPicker value={skills} onChange={setSkills} suggestedSkills={suggestedSkills} />
           <div className="rounded-2xl bg-[#FFF6E0] p-5">
             <p className="font-display text-base font-bold text-neutral-900">{skills.length} skill{skills.length === 1 ? "" : "s"} selected</p>
             <p className="mt-1 text-xs text-neutral-700">New skills start as declared (Pending). Pass an assessment or have your work reviewed to turn them into verified badges.</p>

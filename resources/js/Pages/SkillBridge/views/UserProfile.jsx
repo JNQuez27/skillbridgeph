@@ -4,6 +4,7 @@ import { router, useForm } from "@inertiajs/react";
 import SkillBar from "../components/SkillBar";
 import RegistryStatus from "../components/RegistryStatus";
 import VideoRecorder from "../components/VideoRecorder";
+import SkillFieldPicker from "../../JobSeeker/components/SkillFieldPicker";
 import {
   IconCheck,
   IconChevronDown,
@@ -114,17 +115,15 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
     preferredJobTypes: profile.preferredJobTypes || [],
     expectedSalary: profile.expectedSalary || "",
     availability: profile.availability || "",
-    skills: pendingSkills.map((s) => s.name).join(", "),
+    skills: pendingSkills.map((s) => s.name),
     education: { school: "", degree: "", year: "", ...(profile.education || {}) },
     experience: { title: "", company: "", description: "", ...(profile.experience || {}) },
   });
   const submitSettings = (event) => {
     event.preventDefault();
-    settings.transform((data) => ({
-      ...data,
-      desiredRoles: list(data.desiredRoles),
-      skills: list(data.skills),
-    })).put("/applicant-profile", { preserveScroll: true });
+    // transform() returns nothing in this Inertia version, so it can't be chained.
+    settings.transform((data) => ({ ...data, desiredRoles: list(data.desiredRoles) }));
+    settings.put("/applicant-profile", { preserveScroll: true });
   };
 
   // Take-assessment (badge verification) flow. The server starts the clock and
@@ -687,10 +686,11 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
 
           <fieldset style={{ ...cardStyle, display: "grid", gap: 14, margin: 0 }}>
             <legend style={legendStyle}>Skills</legend>
-            <Labeled label="Self-reported skills (comma-separated)" error={settings.errors.skills}
-              hint={`Verified skills (${verifiedSkills.map((s) => s.name).join(", ") || "none yet"}) are kept automatically and cannot be edited here.`}>
-              <input type="text" value={settings.data.skills} onChange={(e) => settings.setData("skills", e.target.value)} placeholder="React, Customer Service, Excel" style={inputStyle} />
-            </Labeled>
+            <p style={{ fontSize: 12, color: COLORS.textMid, margin: 0 }}>
+              Self-reported skills start as Pending. Verified skills ({verifiedSkills.map((s) => s.name).join(", ") || "none yet"}) are kept automatically and cannot be edited here.
+            </p>
+            <SkillFieldPicker value={settings.data.skills} onChange={(v) => settings.setData("skills", v)} known={verifiedSkills.map((s) => s.name)} />
+            {settings.errors.skills && <p role="alert" style={{ fontSize: 12, color: "#B91C1C", margin: 0 }}>{settings.errors.skills}</p>}
           </fieldset>
 
           <fieldset style={{ ...cardStyle, display: "grid", gap: 14, margin: 0 }}>

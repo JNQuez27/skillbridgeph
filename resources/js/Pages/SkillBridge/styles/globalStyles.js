@@ -1,6 +1,7 @@
 // Fonts are loaded non-render-blocking from the page <head> (see resources/views/app.blade.php).
 export const globalStyles = `
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* In the base layer so Tailwind utility classes (shared JobSeeker components) can override it. */
+  @layer base { * { box-sizing: border-box; margin: 0; padding: 0; } }
   /* Touch targets: every control at least 44px tall (WCAG 2.5.5). */
   button, select, input:not([type=checkbox]):not([type=radio]) { min-height: 44px; }
   /* On phones the account button shows only the avatar, so long names never push the menu off-screen. */

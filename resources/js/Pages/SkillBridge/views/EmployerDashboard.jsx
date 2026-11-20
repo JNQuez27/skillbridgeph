@@ -364,7 +364,8 @@ function TaskReview({ task }) {
   const final = Math.round(task.mcqScore === null ? rubricPct : (task.mcqScore + rubricPct) / 2);
   const submit = (e) => {
     e.preventDefault();
-    form.transform((d) => ({ ...d, scores: d.scores.map(Number) })).post(`/assessment-attempts/${task.id}/review`, { preserveScroll: true });
+    form.transform((d) => ({ ...d, scores: d.scores.map(Number) })); // transform() returns nothing in Inertia 1.x
+    form.post(`/assessment-attempts/${task.id}/review`, { preserveScroll: true });
   };
   return (
     <form onSubmit={submit} style={{ ...cardStyle, display: "grid", gap: 10 }}>
@@ -533,7 +534,8 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
       taskPrompt: taskOn ? d.taskPrompt : "",
       taskFileRequired: taskOn && d.taskFileRequired,
       rubric: taskOn ? d.rubric.map((r) => ({ criterion: r.criterion.trim(), points: Number(r.points) })) : null,
-    })).post("/assessments", { preserveScroll: true, onSuccess: () => { assessmentForm.reset(); setAssessmentOpen(false); } });
+    }));
+    assessmentForm.post("/assessments", { preserveScroll: true, onSuccess: () => { assessmentForm.reset(); setAssessmentOpen(false); } });
   };
 
   const profileForm = useForm({
