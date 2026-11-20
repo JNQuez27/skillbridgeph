@@ -17,11 +17,8 @@ export const globalStyles = `
     border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .badge-verified { background: #ECA406; color: #1A1A1A; font-weight: 800; }
-  .badge-open { background: #8A5A00; color: #FFE7A8; }
-  .badge-premium { background: #9A3018; color: #FFD8C0; }
-  .badge-pending { background: #7A4A20; color: #F0D0A0; }
-  .badge-hired { background: #8A5A00; color: #FFE7A8; }
+  /* every chip: orange with bold white text */
+  .badge-verified, .badge-open, .badge-premium, .badge-pending, .badge-hired { background: #ECA406; color: #FFFFFF; font-weight: 700; }
   .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(30,14,4,0.18); transition: all 0.25s; }
   .sbph-nav-link {
     position: relative;

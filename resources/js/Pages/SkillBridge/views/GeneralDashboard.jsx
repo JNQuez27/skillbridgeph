@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { COLORS } from "../styles/ui";
+import { IconBriefcase, IconHospital, IconMonitor, IconUtensils } from "../components/Icons";
 
 // Scroll-reveal wrapper: fades + slides content into view as it enters the
 // viewport (HopeRise-style). Honors reduced-motion and reveals only once.
@@ -163,11 +164,10 @@ const styles = {
   heroStatPill: {
     padding: "8px 12px",
     borderRadius: "999px",
-    border: `1px solid ${COLORS.parchmentDeep}`,
-    background: COLORS.cream,
-    color: COLORS.textMid,
+    background: COLORS.accent,
+    color: "#FFFFFF",
     fontSize: "13px",
-    fontWeight: 600,
+    fontWeight: 700,
   },
   heroProfileWrap: {
     position: "relative",
@@ -206,15 +206,15 @@ const styles = {
     margin: "0 auto",
   },
   sectionBadge: {
+    width: "fit-content",
     padding: "7px 16px",
     borderRadius: "999px",
-    background: "rgba(236,164,6,0.10)",
-    border: "1px solid rgba(236,164,6,0.24)",
+    background: COLORS.accent,
+    color: "#FFFFFF",
     fontSize: 12,
     fontWeight: 700,
     letterSpacing: "0.32em",
     textTransform: "uppercase",
-    color: COLORS.brownLight,
   },
   sectionTitle: {
     margin: 0,
@@ -250,8 +250,8 @@ const styles = {
     width: 36,
     height: 36,
     borderRadius: "12px",
-    background: COLORS.brownDeep,
-    color: COLORS.cream,
+    background: COLORS.accent,
+    color: "#FFFFFF",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -291,14 +291,17 @@ const styles = {
     padding: "4px 8px",
     borderRadius: "999px",
     background: COLORS.accent,
-    color: COLORS.brownDeep,
+    color: "#FFFFFF",
     fontSize: 12,
     fontWeight: 700,
   },
   jobMatch: {
+    padding: "4px 8px",
+    borderRadius: "999px",
+    background: COLORS.accent,
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: 800,
-    color: COLORS.brownDeep,
+    fontWeight: 700,
   },
   jobMeta: {
     fontSize: 12,
@@ -321,8 +324,8 @@ const styles = {
     width: 44,
     height: 44,
     borderRadius: "14px",
-    background: COLORS.parchmentDark,
-    color: COLORS.brownDeep,
+    background: COLORS.accent,
+    color: "#FFFFFF",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -631,7 +634,12 @@ const footerLinks = [
   { label: "FAQs", href: "#faqs" },
 ];
 
-const initials = (text) => text.split(/[\s&]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+// Icon per industry: IT, food, healthcare; anything else gets a briefcase.
+const industryIcon = (title) =>
+  /\b(it|tech|software|web|computer)\b/i.test(title) ? IconMonitor
+  : /food|beverage|cafe|restaurant/i.test(title) ? IconUtensils
+  : /health|medical|clinic|hospital/i.test(title) ? IconHospital
+  : IconBriefcase;
 
 export default function GeneralDashboard({ landing }) {
   const stats = landing?.stats || {};
@@ -739,7 +747,7 @@ export default function GeneralDashboard({ landing }) {
         <div style={styles.categoryGrid}>
           {industries.map((category, index) => (
             <Reveal key={category.title} style={styles.categoryCard} className="sbph-category-card" delay={index * 90}>
-              <div style={styles.categoryIcon}>{initials(category.title)}</div>
+              <div style={styles.categoryIcon}>{(() => { const Icon = industryIcon(category.title); return <Icon size={22} />; })()}</div>
               <div style={styles.categoryTitle}>{category.title}</div>
               <div style={styles.categoryMeta}>{category.openRoles} open role{category.openRoles === 1 ? "" : "s"}</div>
             </Reveal>
