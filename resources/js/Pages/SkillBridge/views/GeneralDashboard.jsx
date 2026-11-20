@@ -57,7 +57,7 @@ const dashboardStyles = `
   @media (max-width: 860px) { .sbph-footer-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .sbph-footer-grid { grid-template-columns: 1fr; } }
   .sbph-footer-link { transition: color 0.2s ease, transform 0.2s ease; cursor: pointer; }
-  .sbph-footer-link:hover { color: #FFD98A; transform: translateX(3px); }
+  .sbph-footer-link:hover { color: #000; text-decoration: underline; transform: translateX(3px); }
   @media (prefers-reduced-motion: reduce) {
     .sbph-lift, .sbph-category-card, .sbph-faq, .sbph-footer-link { transition: none; }
   }
@@ -135,10 +135,10 @@ const styles = {
     border: "none",
     borderRadius: "999px",
     padding: "12px 20px",
-    background: `linear-gradient(90deg, ${COLORS.success}, #8A5A00)`,
-    color: COLORS.cream,
+    background: COLORS.accent,
+    color: COLORS.brownDeep,
     fontSize: "13px",
-    fontWeight: 700,
+    fontWeight: 800,
     cursor: "pointer",
     boxShadow: "0 16px 32px rgba(236,164,6, 0.28)",
   },
@@ -290,15 +290,15 @@ const styles = {
   jobTag: {
     padding: "4px 8px",
     borderRadius: "999px",
-    background: COLORS.brownDeep,
-    color: COLORS.cream,
+    background: COLORS.accent,
+    color: COLORS.brownDeep,
     fontSize: 12,
     fontWeight: 700,
   },
   jobMatch: {
     fontSize: 12,
-    fontWeight: 700,
-    color: COLORS.success,
+    fontWeight: 800,
+    color: COLORS.brownDeep,
   },
   jobMeta: {
     fontSize: 12,
@@ -396,7 +396,7 @@ const styles = {
     width: 20,
     height: 20,
     borderRadius: "50%",
-    background: COLORS.success,
+    background: COLORS.accent,
     color: COLORS.cream,
     display: "flex",
     alignItems: "center",
@@ -476,8 +476,8 @@ const styles = {
     borderRadius: "18px",
     padding: "20px",
     border: `1px solid ${COLORS.parchmentDeep}`,
-    background: `linear-gradient(135deg, ${COLORS.success} 0%, #8A5A00 100%)`,
-    color: COLORS.cream,
+    background: COLORS.accent,
+    color: COLORS.brownDeep,
     display: "grid",
     gap: "10px",
   },
@@ -503,8 +503,8 @@ const styles = {
     justifySelf: "start",
   },
   footer: {
-    background: `linear-gradient(160deg, ${COLORS.brownDeep} 0%, ${COLORS.brownMid} 100%)`,
-    color: COLORS.cream,
+    background: COLORS.accent,
+    color: COLORS.brownDeep,
     borderRadius: "0",
     padding: "clamp(56px, 7vh, 88px) clamp(24px, 5vw, 72px) 40px",
     display: "grid",
@@ -518,24 +518,28 @@ const styles = {
     fontSize: 12,
     fontWeight: 700,
     margin: "0 0 4px",
-    color: COLORS.goldLight,
+    color: COLORS.brownDeep,
+    fontWeight: 800,
     textTransform: "uppercase",
     letterSpacing: "0.16em",
   },
   footerText: {
     fontSize: 12,
-    color: "rgba(253,246,232,0.7)",
+    color: COLORS.brownDeep,
+    fontWeight: 700,
     margin: 0,
   },
   footerLink: {
     fontSize: 13,
-    color: "rgba(253,246,232,0.8)",
+    color: COLORS.brownDeep,
+    fontWeight: 700,
     textDecoration: "none",
     padding: "12px 0",
   },
   footerBottom: {
     fontSize: 12,
-    color: "rgba(253,246,232,0.6)",
+    color: COLORS.brownDeep,
+    fontWeight: 700,
     textAlign: "center",
   },
 };

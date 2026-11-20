@@ -8,7 +8,7 @@ export default function Button({
 }) {
   const base = "inline-flex min-h-11 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
   const variants = {
-    primary: "bg-[#ECA406] text-neutral-900 hover:bg-[#D69405]",
+    primary: "bg-[#ECA406] text-neutral-900 hover:bg-[#F2B32E]",
     secondary: "bg-white text-neutral-900 border border-[#F3D89B] hover:bg-[#FFF6E0]",
     ghost: "bg-transparent text-neutral-700 hover:bg-[#FFF6E0]",
   };

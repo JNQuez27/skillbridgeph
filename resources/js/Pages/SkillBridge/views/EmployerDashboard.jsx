@@ -35,17 +35,17 @@ const companyInitials = (name) => {
 };
 
 const STATUS_META = {
-  applied: { label: "Applied", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
+  applied: { label: "Applied", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
   invited: { label: "Invited", bg: "rgba(124,58,237,0.14)", color: "#7C3AED" },
   shortlisted: { label: "Shortlisted", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
   interviewing: { label: "Interviewing", bg: "rgba(180,83,9,0.14)", color: "#B45309" },
-  hired: { label: "Hired", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
+  hired: { label: "Hired", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
   not_selected: { label: "Not selected", bg: "rgba(85,85,85,0.12)", color: "#555555" },
   declined: { label: "Declined invitation", bg: "rgba(85,85,85,0.12)", color: "#555555" },
 };
 
 const ASSESSMENT_STATE = {
-  passed: { label: "Passed", color: "#8A5A00" },
+  passed: { label: "Passed", color: "#1A1A1A" },
   failed: { label: "Did not pass (no attempts left)", color: "#B91C1C" },
   in_progress: { label: "Attempted, not passed yet", color: "#B45309" },
   not_taken: { label: "Not taken yet", color: "#555555" },
@@ -86,7 +86,7 @@ function VerificationSignals({ signals }) {
     <span key={text} style={{
       padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 600,
       background: tone === "warn" ? "rgba(180,83,9,0.12)" : tone === "good" ? "rgba(236,164,6,0.12)" : COLORS.parchmentDark,
-      color: tone === "warn" ? "#B45309" : tone === "good" ? "#8A5A00" : COLORS.textMid,
+      color: tone === "warn" ? "#B45309" : tone === "good" ? "#1A1A1A" : COLORS.textMid,
     }}>{text}</span>
   );
   return (
@@ -103,7 +103,7 @@ function VerificationSignals({ signals }) {
 }
 
 const VERDICT = {
-  green: { label: "Checks passed", bg: "rgba(236,164,6,0.12)", color: "#8A5A00" },
+  green: { label: "Checks passed", bg: "rgba(236,164,6,0.12)", color: "#1A1A1A" },
   amber: { label: "Needs a look", bg: "rgba(180,83,9,0.12)", color: "#B45309" },
   red: { label: "Review required", bg: "rgba(185,28,28,0.12)", color: "#B91C1C" },
 };
@@ -392,7 +392,7 @@ function TaskReview({ task }) {
         <textarea rows={2} style={{ ...inputStyle, resize: "vertical" }} value={form.data.feedback} onChange={(e) => form.setData("feedback", e.target.value)} />
       </Field>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <span aria-live="polite" style={{ fontSize: 13, fontWeight: 600, color: !filled ? COLORS.textLight : final >= task.passingScore ? "#8A5A00" : "#B91C1C" }}>
+        <span aria-live="polite" style={{ fontSize: 13, fontWeight: 600, color: !filled ? COLORS.textLight : final >= task.passingScore ? "#1A1A1A" : "#B91C1C" }}>
           {filled ? `Final ${final}%: ${final >= task.passingScore ? "passes, the badge will be issued" : "does not pass"}` : "Score every criterion"}
         </span>
         <button type="submit" disabled={!filled || form.processing} style={{ ...primaryBtn, opacity: !filled || form.processing ? 0.6 : 1 }}>Submit score</button>
@@ -645,7 +645,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                 closingJob === job.id ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 12, color: COLORS.textMid }}>How did this role end?</span>
-                    <button type="button" style={{ ...primaryBtn, background: COLORS.success }} onClick={() => closeJob(job, "filled")}>Filled</button>
+                    <button type="button" style={{ ...primaryBtn, background: COLORS.accent }} onClick={() => closeJob(job, "filled")}>Filled</button>
                     <button type="button" style={ghostBtn} onClick={() => closeJob(job, "cancelled")}>Cancelled</button>
                     <button type="button" style={{ ...ghostBtn, border: "none" }} onClick={() => setClosingJob(null)}>Keep open</button>
                   </div>
@@ -785,13 +785,13 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                       ) : (
                       <div style={{ display: "grid", gap: 6 }}>
                         {a.hired ? (
-                          <span style={{ fontSize: 12, fontWeight: 700, color: "#8A5A00", textAlign: "center" }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A", textAlign: "center" }}>
                             Hired via {a.reviewedMode === "auto" ? "system review" : "manual review"}
                           </span>
                         ) : a.status === "not_selected" ? null : (
                           <button
                             style={{ ...primaryBtn, padding: "6px 12px",
-                              background: a.review?.canAutoApprove ? COLORS.success : COLORS.parchmentDeep,
+                              background: a.review?.canAutoApprove ? COLORS.accent : COLORS.parchmentDeep,
                               color: a.review?.canAutoApprove ? "#fff" : COLORS.textLight,
                               cursor: a.review?.canAutoApprove ? "pointer" : "not-allowed" }}
                             disabled={!a.review?.canAutoApprove}
@@ -855,7 +855,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                   {(() => {
                     const passing = candidates.filter((c) => ["applied", "invited"].includes(c.status) && c.review?.canAutoApprove).length;
                     return passing > 0 && (
-                      <button type="button" style={{ ...primaryBtn, background: COLORS.success }} onClick={() => shortlistPassing(job, passing)}>
+                      <button type="button" style={{ ...primaryBtn, background: COLORS.accent }} onClick={() => shortlistPassing(job, passing)}>
                         <IconCheck size={13} /> Shortlist {passing} passing
                       </button>
                     );
@@ -938,7 +938,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                   <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.brownLight }}>{job.applicants} applicants</span>
                 </div>
                 <div style={{ background: COLORS.parchmentDeep, borderRadius: 6, height: 6 }}>
-                  <div style={{ width: `${Math.min(100, job.applicants * 12)}%`, height: "100%", borderRadius: 6, background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.success})` }} />
+                  <div style={{ width: `${Math.min(100, job.applicants * 12)}%`, height: "100%", borderRadius: 6, background: `${COLORS.accent}` }} />
                 </div>
               </div>
             ))}
@@ -953,7 +953,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                   <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.brownLight }}>{count} role(s)</span>
                 </div>
                 <div style={{ background: COLORS.parchmentDeep, borderRadius: 6, height: 6 }}>
-                  <div style={{ width: `${Math.min(100, count * 25)}%`, height: "100%", borderRadius: 6, background: `linear-gradient(90deg, ${COLORS.accent}, ${COLORS.success})` }} />
+                  <div style={{ width: `${Math.min(100, count * 25)}%`, height: "100%", borderRadius: 6, background: `${COLORS.accent}` }} />
                 </div>
               </div>
             ))}
@@ -1092,7 +1092,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
             if (!company.emailVerified || evidence.length === 0 || skillsLeft.length === 0) return null;
             return (
               <div style={{ border: "1px solid rgba(236,164,6,0.35)", borderRadius: 10, padding: "12px 14px", background: "rgba(236,164,6,0.06)", display: "grid", gap: 10 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#8A5A00" }}>Verify a skill from evidence</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1A1A" }}>Verify a skill from evidence</div>
                 <div style={{ fontSize: 12, color: COLORS.textMid }}>
                   Only if the file you opened clearly demonstrates the skill. The badge will name {company.companyName} and this file, and the candidate cannot delete it afterwards.
                   A video counts only after your interview confirmed it is the same person and they repeated the task live.
@@ -1114,7 +1114,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                 <div>
                   <button type="button" disabled={!verifyPick.skill || !verifyPick.credentialId || !checked.includes(Number(verifyPick.credentialId))}
                     title="Tick the file as reviewed first"
-                    style={{ ...primaryBtn, background: COLORS.success, opacity: verifyPick.skill && verifyPick.credentialId && checked.includes(Number(verifyPick.credentialId)) ? 1 : 0.5 }}
+                    style={{ ...primaryBtn, background: COLORS.accent, opacity: verifyPick.skill && verifyPick.credentialId && checked.includes(Number(verifyPick.credentialId)) ? 1 : 0.5 }}
                     onClick={verifySkill}>
                     <IconCheck size={13} /> Verify skill
                   </button>
@@ -1320,7 +1320,7 @@ export default function EmployerView({ account, activeTab = "job-offers", onTabC
                     <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.brownDeep }}>{c.name}</div>
                     <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 2 }}>{c.role}{c.bestJobTitle ? ` · best fit: ${c.bestJobTitle}` : ""}</div>
                     <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                      {(c.skills || []).slice(0, 3).map((s) => <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 999, background: "#FFF3D6", fontSize: 12, color: "#8A5A00" }}><IconCheck size={9} /> {s}</span>)}
+                      {(c.skills || []).slice(0, 3).map((s) => <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "3px 8px", borderRadius: 999, background: "#FFF3D6", fontSize: 12, color: "#1A1A1A" }}><IconCheck size={9} /> {s}</span>)}
                       {c.claimed > 0 && <span style={{ padding: "3px 8px", borderRadius: 999, background: COLORS.cream, fontSize: 12, color: COLORS.textMid, border: `1px solid ${COLORS.parchmentDeep}` }}>+{c.claimed} self-reported</span>}
                     </div>
                   </div>

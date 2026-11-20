@@ -18,8 +18,8 @@ const ghostBtn = { padding: "8px 14px", borderRadius: 8, background: "transparen
 const inputStyle = { padding: "10px 12px", borderRadius: 10, border: `1px solid ${COLORS.parchmentDeep}`, background: COLORS.cream, fontSize: 13, color: COLORS.textDark, fontFamily: FONT_BODY };
 
 const STATUS = {
-  approved: { label: "Approved", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
-  verified: { label: "Confirmed", bg: "rgba(236,164,6,0.14)", color: "#8A5A00" },
+  approved: { label: "Approved", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
+  verified: { label: "Confirmed", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
   rejected: { label: "Rejected", bg: "rgba(185,28,28,0.12)", color: "#B91C1C" },
   pending: { label: "Pending", bg: "rgba(236,164,6,0.14)", color: "#1A1A1A" },
 };
@@ -68,7 +68,7 @@ function ModerationCard({ a }) {
           </div>
           <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 2 }}>{a.attempts} scored attempt(s) · {a.passed} passed</div>
         </div>
-        <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: suspended ? "rgba(185,28,28,0.12)" : "rgba(236,164,6,0.14)", color: suspended ? "#B91C1C" : "#8A5A00" }}>{a.status}</span>
+        <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 12, fontWeight: 700, background: suspended ? "rgba(185,28,28,0.12)" : "rgba(236,164,6,0.14)", color: suspended ? "#B91C1C" : "#1A1A1A" }}>{a.status}</span>
       </div>
       {a.flags.length > 0 && (
         <ul aria-label="Warnings" style={{ margin: 0, padding: "8px 12px 8px 28px", borderRadius: 10, background: "#FFFBEB", border: "1px solid #FDE68A", fontSize: 12, color: "#92400E" }}>
@@ -83,7 +83,7 @@ function ModerationCard({ a }) {
               {q.prompt}
               <ul style={{ margin: "4px 0 0", paddingLeft: 18, fontSize: 12, color: COLORS.textMid }}>
                 {q.options.map((o, oi) => (
-                  <li key={oi} style={oi === q.answer ? { color: "#8A5A00", fontWeight: 700 } : undefined}>{o}{oi === q.answer ? " (correct)" : ""}</li>
+                  <li key={oi} style={oi === q.answer ? { color: "#1A1A1A", fontWeight: 700 } : undefined}>{o}{oi === q.answer ? " (correct)" : ""}</li>
                 ))}
               </ul>
             </li>
@@ -165,7 +165,7 @@ function Decision({ url, who }) {
 
   return (
     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-      <button type="button" disabled={busy} onClick={() => decide("approve")} style={{ ...primaryBtn, background: COLORS.success, opacity: busy ? 0.6 : 1 }}>
+      <button type="button" disabled={busy} onClick={() => decide("approve")} style={{ ...primaryBtn, background: COLORS.accent, opacity: busy ? 0.6 : 1 }}>
         <IconCheck size={13} /> Approve
       </button>
       <button type="button" style={ghostBtn} onClick={() => setRejecting(true)}>Reject…</button>

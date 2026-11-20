@@ -4,7 +4,7 @@ import { IconCheck } from "./Icons";
 // Patent Fig. 5, step 530: the automatic pre-check. It informs the admin's
 // decision (535-545); it never validates a company on its own.
 const LOOK = {
-  pass: { mark: <IconCheck size={13} />, bg: "#FFF3D6", color: "#8A5A00", text: "Passed" },
+  pass: { mark: <IconCheck size={13} />, bg: "#FFF3D6", color: "#1A1A1A", text: "Passed" },
   fail: { mark: "✕", bg: "#FEE2E2", color: "#B91C1C", text: "Failed" },
   unknown: { mark: "?", bg: "#FEF3C7", color: "#92400E", text: "Check by eye" },
 };

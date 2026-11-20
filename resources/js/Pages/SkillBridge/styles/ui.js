@@ -12,13 +12,13 @@ export const COLORS = {
   rust: "#1A1A1A",          // eyebrow / badge text
   rustLight: "#ECA406",
   rustBright: "#ECA406",
-  gold: "#8A5A00",          // verified / success text: dark amber (7:1 on white, AA)
+  gold: "#1A1A1A",          // verified / success text: black (no brown); fills use accent
   goldLight: "#ECA406",     // metric numbers on the dark header
   tan: "#F3D89B",
   textDark: "#1A1A1A",      // foreground
   textMid: "#333333",
   textLight: "#555555",     // muted foreground (7:1 on page bg)
-  success: "#8A5A00",
+  success: "#1A1A1A",
   successLight: "#ECA406",
   info: "#1A1A1A",          // text / links: black; fills use accent
   accent: "#ECA406",        // primary: buttons, bars, highlights (black text on it)

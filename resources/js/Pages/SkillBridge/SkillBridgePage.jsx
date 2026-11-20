@@ -197,11 +197,11 @@ export default function SkillBridgePage() {
           <div className="sbph-brand" onClick={() => router.visit("/")} role="link" aria-label="SkillBridge PH home">
             <span className="sbph-brand-icon" aria-hidden="true">
               <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 25 V15 C9 8 27 8 27 15 V25" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M9 20 H27" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                <circle cx="9" cy="15" r="2.5" fill="white" />
-                <circle cx="27" cy="15" r="2.5" fill="white" />
-                <circle cx="18" cy="20" r="2.5" fill="white" />
+                <path d="M9 25 V15 C9 8 27 8 27 15 V25" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 20 H27" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="9" cy="15" r="2.5" fill="#1A1A1A" />
+                <circle cx="27" cy="15" r="2.5" fill="#1A1A1A" />
+                <circle cx="18" cy="20" r="2.5" fill="#1A1A1A" />
               </svg>
             </span>
             <span className="sbph-brand-text">SkillBridge <span className="sbph-brand-ph">PH</span></span>
@@ -384,7 +384,7 @@ export default function SkillBridgePage() {
           padding: "12px 14px", borderRadius: 12, fontSize: 13, lineHeight: 1.45,
           background: notice.tone === "error" ? "#FEF2F2" : "#FFF3D6",
           border: `1px solid ${notice.tone === "error" ? "#FECACA" : "#F3D89B"}`,
-          color: notice.tone === "error" ? "#991B1B" : "#8A5A00",
+          color: notice.tone === "error" ? "#991B1B" : "#1A1A1A",
           boxShadow: "0 12px 30px rgba(0,0,0, 0.16)",
         }}>
           <span style={{ fontWeight: 700 }}>{notice.tone === "error" ? "Not done:" : "Done:"}</span>

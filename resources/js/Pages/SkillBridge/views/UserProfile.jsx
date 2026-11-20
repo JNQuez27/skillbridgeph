@@ -149,7 +149,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
       { preserveScroll: true, forceFormData: !!taskFile });
   };
 
-  const statusColor = (status) => ({ applied: "#8A5A00", shortlisted: "#8A5A00", interviewing: "#8A5A00", hired: "#8A5A00", invited: "#7C3AED", saved: "#1A1A1A", not_selected: "#555555" }[status] || "#B45309");
+  const statusColor = (status) => ({ applied: "#1A1A1A", shortlisted: "#1A1A1A", interviewing: "#1A1A1A", hired: "#1A1A1A", invited: "#7C3AED", saved: "#1A1A1A", not_selected: "#555555" }[status] || "#B45309");
 
   return (
     <div className="sbph-applicant-page" style={{ padding: "28px 32px", fontFamily: FONT_BODY, background: COLORS.parchment, minHeight: "calc(100vh - 64px)" }}>
@@ -904,7 +904,7 @@ function StatusTracker({ app }) {
           <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.brownDeep }}>{app.title}</div>
           <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 3 }}>{[app.company, app.location].filter(Boolean).join(" · ")} · updated {app.updatedAt}{app.jobOpen ? "" : " · job closed"}</div>
         </div>
-        <span style={{ fontSize: 12, fontWeight: 700, color: dropped ? "#555555" : app.status === "hired" ? "#8A5A00" : COLORS.info }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: dropped ? "#555555" : app.status === "hired" ? "#1A1A1A" : COLORS.info }}>
           {dropped ? "Not selected" : TRACK_STEPS[current]?.[1]}
         </span>
       </div>
@@ -950,7 +950,7 @@ const STATUS_LABEL = {
 };
 // Fig. 7, step 715: every skill on the card says where the applicant stands, in words (not color alone).
 const SKILL_STATE = {
-  verified: { label: "Verified", bg: "#FFF3D6", border: "#F3D89B", color: "#8A5A00" },
+  verified: { label: "Verified", bg: "#FFF3D6", border: "#F3D89B", color: "#1A1A1A" },
   evidenced: { label: "Claimed + work sample", bg: "#FFF6E0", border: "#ECA406", color: "#333333" },
   claimed: { label: "Claimed", bg: "#FFF9EB", border: "#F3D89B", color: "#333333" },
   below: { label: "Below required level", bg: "#FFFBEB", border: "#FDE68A", color: "#92400E" },

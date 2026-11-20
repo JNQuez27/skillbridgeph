@@ -15,7 +15,7 @@ export default function VerifyBadge({ verificationId, badge }) {
         </div>
         {badge ? (
           <div style={{ padding: "20px 22px", display: "grid", gap: 12 }}>
-            <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, color: "#8A5A00", background: "#FFF3D6", border: "1px solid #F3D89B", borderRadius: 10, padding: "10px 12px", fontSize: 14, fontWeight: 700 }}>
+            <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, color: "#1A1A1A", background: "#FFF3D6", border: "1px solid #F3D89B", borderRadius: 10, padding: "10px 12px", fontSize: 14, fontWeight: 700 }}>
               <span aria-hidden="true">✓</span> Verified badge
             </div>
             <h1 style={{ fontFamily: FONT_DISPLAY, fontSize: 22, color: COLORS.brownDeep, margin: 0 }}>{badge.badge}</h1>

@@ -17,7 +17,7 @@ export const globalStyles = `
     border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .badge-verified { background: #8A5A00; color: #FFE7A8; }
+  .badge-verified { background: #ECA406; color: #1A1A1A; font-weight: 800; }
   .badge-open { background: #8A5A00; color: #FFE7A8; }
   .badge-premium { background: #9A3018; color: #FFD8C0; }
   .badge-pending { background: #7A4A20; color: #F0D0A0; }
@@ -65,11 +65,11 @@ export const globalStyles = `
   .sbph-nav { position: sticky; top: 0; z-index: 100; background: #FFFCF5; border-bottom: 1px solid #F3D89B; height: 64px; display: flex; align-items: center; padding: 0 clamp(16px, 4vw, 40px); }
   .sbph-nav-wrap { width: 100%; max-width: 1240px; margin: 0 auto; display: flex; align-items: center; gap: 16px; }
   .sbph-brand { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-  .sbph-brand-icon { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1A1A1A, #ECA406, #ECA406); background-size: 200% 200%; animation: sbphGradientShift 4s ease-in-out infinite alternate; box-shadow: 0 4px 14px rgba(236,164,6,0.30); transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease; flex-shrink: 0; }
+  .sbph-brand-icon { width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: #ECA406; box-shadow: 0 4px 14px rgba(236,164,6,0.30); transition: transform 0.25s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease; flex-shrink: 0; }
   .sbph-brand-icon svg { width: 24px; height: 24px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.12)); }
   .sbph-brand:hover .sbph-brand-icon { transform: scale(1.06) rotate(-2deg); box-shadow: 0 8px 24px rgba(236,164,6,0.45); }
   .sbph-brand-text { font-size: clamp(16px, 2.4vw, 20px); font-weight: 800; letter-spacing: -0.3px; color: #1A1A1A; display: inline-flex; align-items: center; gap: 3px; }
-  .sbph-brand-ph { background: linear-gradient(135deg, #ECA406, #1A1A1A); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; transition: background 0.3s ease; }
+  .sbph-brand-ph { color: #1A1A1A; font-weight: 800; }
   .sbph-brand:hover .sbph-brand-ph { background: linear-gradient(135deg, #1A1A1A, #ECA406); -webkit-background-clip: text; background-clip: text; color: transparent; }
   @keyframes sbphGradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
   .sbph-nav-center { display: flex; align-items: center; gap: 20px; flex: 1; justify-content: center; font-size: 12px; font-weight: 600; }

@@ -19,7 +19,7 @@ export default function SkillBar({ skill, action = null }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A" }}>{skill.name}</span>
           {isVerified ? (
-            <span className="sbph-badge" style={{ fontSize: 12, gap: 4, background: "#FFF3D6", color: "#8A5A00" }}>
+            <span className="sbph-badge" style={{ fontSize: 12, gap: 4, background: "#FFF3D6", color: "#1A1A1A" }}>
               <IconCheck size={10} /> {TIER[skill.verificationMethod] || "Verified"}
             </span>
           ) : isUnverified ? (
@@ -49,7 +49,7 @@ export default function SkillBar({ skill, action = null }) {
       {isVerified && (
         <>
           <div style={{ background: "#FFF6E0", borderRadius: 6, height: 6, overflow: "hidden" }}>
-            <div style={{ width: `${skill.level}%`, height: "100%", borderRadius: 6, background: "linear-gradient(90deg, #1A1A1A, #8A5A00)" }} />
+            <div style={{ width: `${skill.level}%`, height: "100%", borderRadius: 6, background: "#ECA406" }} />
           </div>
           <div style={{ fontSize: 12, color: "#555555", marginTop: 4 }}>
             {skill.verifiedBy ? `By ${skill.verifiedBy}` : "Verified"} via {METHOD[skill.verificationMethod] || skill.verificationMethod}

@@ -19,7 +19,7 @@ export default function ForgotPassword() {
     >
       <form className="flex flex-col gap-4" onSubmit={submit}>
         {props.flash?.success && (
-          <div role="status" className="rounded-xl bg-[#FFF3D6] px-4 py-3 text-sm text-[#8A5A00]">{props.flash.success}</div>
+          <div role="status" className="rounded-xl bg-[#FFF3D6] px-4 py-3 text-sm text-neutral-900 font-semibold">{props.flash.success}</div>
         )}
         <Input
           id="forgot-email"

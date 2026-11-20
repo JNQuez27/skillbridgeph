@@ -81,7 +81,7 @@ with a bottom navigation bar, badge wallet and job feed.
 - **Database:** PostgreSQL (Docker / Render); SQLite for quick local development
 - **Email:** [Brevo](https://www.brevo.com) HTTPS API (`MAIL_MAILER=brevo`); `log` locally
 - **Fonts:** Lexend (display) + Source Sans 3 (body)
-- **Palette:** amber accent `#ECA406`, navy text `#0C4A6E`, verified-green `#15803D`
+- **Palette:** orange `#ECA406` (buttons, badges, logo, footer) with bold black `#1A1A1A` text; no blue, green or brown
 
 ---
 
