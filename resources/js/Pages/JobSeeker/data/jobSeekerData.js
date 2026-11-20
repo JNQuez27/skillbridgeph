@@ -1,25 +1,15 @@
-export const skillOptions = [
-  "Customer Service",
-  "Barista",
-  "Cash Handling",
-  "Inventory",
-  "Graphic Design",
-  "Social Media",
-  "Virtual Assistance",
-  "Scheduling",
-  "Email Management",
-  "Bookkeeping",
-  "Retail Sales",
-  "Food Prep",
-  "Event Coordination",
-  "Copywriting",
-  "Sales Support",
-  "Project Coordination",
-  "Content Creation",
-  "Data Entry",
-  "Logistics",
-  "Client Support",
+// Onboarding step 1 groups skills by field, so an applicant outside IT sees their own skills.
+export const skillGroups = [
+  { name: "IT & Web", skills: ["HTML", "CSS", "JavaScript", "React", "PHP", "Laravel", "MySQL", "WordPress", "Webflow", "Git", "Figma", "Technical Support"] },
+  { name: "Hospitality & Hotels", skills: ["Front Desk", "Guest Relations", "Reservations", "Housekeeping", "Concierge", "Event Coordination", "Customer Service"] },
+  { name: "Food & Restaurant", skills: ["Barista", "Food Prep", "Food Safety", "Table Service", "Bartending", "Cash Handling", "Kitchen Operations", "Customer Service"] },
+  { name: "Healthcare", skills: ["Patient Care", "First Aid", "Vital Signs", "Medical Records", "Front Desk", "Scheduling", "Caregiving"] },
+  { name: "Office & Admin", skills: ["Data Entry", "Virtual Assistance", "Email Management", "Scheduling", "Bookkeeping", "Project Coordination", "MS Excel"] },
+  { name: "Retail & Sales", skills: ["Retail Sales", "Sales Support", "Cash Handling", "Inventory", "Visual Merchandising", "Logistics", "Client Support"] },
+  { name: "Creative & Marketing", skills: ["Graphic Design", "Social Media", "Content Creation", "Copywriting", "SEO", "Video Editing"] },
 ];
+
+export const skillOptions = [...new Set(skillGroups.flatMap((g) => g.skills))];
 
 export const suggestedJobs = [
   {

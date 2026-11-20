@@ -4,7 +4,7 @@ import AuthLayout from "./components/layout/AuthLayout";
 import Button from "./components/ui/Button";
 import Input from "./components/ui/Input";
 import FlashBanner from "./components/ui/FlashBanner";
-import { skillOptions } from "./data/jobSeekerData";
+import { skillGroups, skillOptions } from "./data/jobSeekerData";
 
 // Applicant profile setup in three steps (reference flow): skills, goals, proof.
 const STEPS = [
@@ -29,6 +29,11 @@ export default function Onboarding({ suggestedSkills = [], profile = {} }) {
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState({});
   const [search, setSearch] = useState("");
+  const groups = useMemo(() => [
+    ...(suggestedSkills.length ? [{ name: "In demand", skills: suggestedSkills }] : []),
+    ...skillGroups,
+  ], [suggestedSkills]);
+  const [group, setGroup] = useState(groups[0].name);
   const [skills, setSkills] = useState(profile.skills || []);
   const [goals, setGoals] = useState({
     desiredRole: profile.desiredRole || "", location: profile.location || "", workSetups: profile.workSetups || [],
@@ -40,10 +45,10 @@ export default function Onboarding({ suggestedSkills = [], profile = {} }) {
   const toggleSkill = (name) => setSkills((prev) => (prev.some((s) => s.toLowerCase() === name.toLowerCase())
     ? prev.filter((s) => s.toLowerCase() !== name.toLowerCase()) : [...prev, name]));
   const suggestions = useMemo(() => {
-    const pool = [...new Set([...suggestedSkills, ...skillOptions])];
     const q = search.trim().toLowerCase();
-    return (q ? pool.filter((s) => s.toLowerCase().includes(q)) : pool.slice(0, 12)).slice(0, 12);
-  }, [search, suggestedSkills]);
+    if (!q) return groups.find((g) => g.name === group)?.skills || [];
+    return [...new Set([...suggestedSkills, ...skillOptions])].filter((s) => s.toLowerCase().includes(q)).slice(0, 12);
+  }, [search, suggestedSkills, groups, group]);
   const canAddTyped = search.trim() && !has(search.trim()) && !suggestions.some((s) => s.toLowerCase() === search.trim().toLowerCase());
 
   const go = (next) => { setErrors({}); setStep(next); window.scrollTo(0, 0); };
@@ -102,7 +107,18 @@ export default function Onboarding({ suggestedSkills = [], profile = {} }) {
           <Input id="skill-search" label="Find a skill" placeholder="Search skills, tools, or strengths" value={search}
             onChange={(e) => setSearch(e.target.value)} />
           <div>
-            <p className="mb-3 text-sm font-semibold text-neutral-900">{search ? "Matching skills" : "Skills employers are asking for"}</p>
+            <p className="mb-3 text-sm font-semibold text-neutral-900">{search ? "Matching skills" : "Choose your field, then pick your skills"}</p>
+            {!search && (
+              <div role="tablist" aria-label="Skill fields" className="mb-3 flex flex-wrap gap-2">
+                {groups.map((g) => (
+                  <button key={g.name} type="button" role="tab" aria-selected={group === g.name} onClick={() => setGroup(g.name)}
+                    className={`min-h-9 rounded-full px-3 text-xs font-bold transition ${group === g.name ? "bg-[#ECA406] text-white" : "bg-[#FFF6E0] text-neutral-900 hover:bg-[#FDF0D0]"}`}>
+                    {g.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            {!search && group === "In demand" && <p className="mb-3 text-xs text-neutral-600">Skills open jobs on SkillBridge PH ask for right now.</p>}
             <div className="flex flex-wrap gap-2">
               {suggestions.map((s) => <Chip key={s} on={has(s)} onClick={() => toggleSkill(s)}>{s}</Chip>)}
               {canAddTyped && <Chip on={false} onClick={() => { toggleSkill(search.trim()); setSearch(""); }}>Add “{search.trim()}”</Chip>}
