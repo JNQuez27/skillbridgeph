@@ -1,5 +1,5 @@
 import { COLORS, FONT_DISPLAY, FONT_BODY } from "../styles/ui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { router, useForm } from "@inertiajs/react";
 import SkillBar from "../components/SkillBar";
 import RegistryStatus from "../components/RegistryStatus";
@@ -52,10 +52,15 @@ const ASSESSMENT_STATE = {
 };
 
 function Modal({ title, eyebrow, onClose, children }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
     <div role="dialog" aria-modal="true" onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0, 0.5)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 60,
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 200,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
         background: COLORS.cream, borderRadius: 16, padding: "22px 24px", width: "min(680px, 100%)",
@@ -67,7 +72,7 @@ function Modal({ title, eyebrow, onClose, children }) {
             <div style={{ fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", color: COLORS.brownLight, fontWeight: 700 }}>{eyebrow}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: COLORS.brownDeep, marginTop: 6, fontFamily: FONT_DISPLAY }}>{title}</div>
           </div>
-          <button type="button" onClick={onClose} style={{ border: "none", background: COLORS.parchment, borderRadius: 999, width: 32, height: 32, cursor: "pointer", color: COLORS.textMid, fontWeight: 700 }}>×</button>
+          <button type="button" onClick={onClose} aria-label="Close" style={{ border: "none", background: COLORS.parchment, borderRadius: 999, width: 40, height: 40, flexShrink: 0, cursor: "pointer", color: COLORS.brownDeep, fontSize: 20, fontWeight: 700, lineHeight: 1 }}>×</button>
         </div>
         {children}
       </div>

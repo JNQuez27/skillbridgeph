@@ -55,6 +55,11 @@ export const globalStyles = `
   .sbph-menu-item:hover { background: #FFF6E0; color: #1A1A1A; }
   .sbph-menu-item.active { background: #ECA406; color: #1A1A1A; }
   .sbph-menu-item svg { flex-shrink: 0; }
+  .sbph-company > summary::-webkit-details-marker { display: none; }
+  .sbph-company > summary:hover { background: #FFF9EB; border-radius: 14px; }
+  .sbph-company > summary:focus-visible { outline: 2px solid #1A1A1A; outline-offset: 2px; border-radius: 14px; }
+  .sbph-company-chevron { transition: transform 0.2s ease; }
+  .sbph-company[open] .sbph-company-chevron { transform: rotate(180deg); }
   .sbph-menu-item--danger { color: #B91C1C; }
   .sbph-menu-item--danger:hover { background: #FEF2F2; color: #991B1B; }
 

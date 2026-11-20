@@ -379,7 +379,7 @@ export default function SkillBridgePage() {
 
       {notice && !noticeHidden && (
         <div role={notice.tone === "error" ? "alert" : "status"} aria-live="polite" style={{
-          position: "fixed", top: 76, left: "50%", transform: "translateX(-50%)", zIndex: 80,
+          position: "fixed", top: 76, left: "50%", transform: "translateX(-50%)", zIndex: 210,
           width: "min(560px, calc(100% - 32px))", display: "flex", alignItems: "flex-start", gap: 10,
           padding: "12px 14px", borderRadius: 12, fontSize: 13, lineHeight: 1.45,
           background: notice.tone === "error" ? "#FEF2F2" : "#FFF3D6",

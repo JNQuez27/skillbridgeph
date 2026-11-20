@@ -6,6 +6,7 @@ import RegistryStatus from "../components/RegistryStatus";
 import VideoRecorder from "../components/VideoRecorder";
 import {
   IconCheck,
+  IconChevronDown,
   IconStar,
   IconAward,
   IconBriefcase,
@@ -24,7 +25,7 @@ const sectionMeta = {
   applications: { label: "My Applications", sub: "Answer employer invitations and see where each application stands." },
   assessments: { label: "Assessments", sub: "Take a company assessment to verify a skill badge." },
   browse: { label: "Find Jobs", sub: "Search every open role and view your match." },
-  companies: { label: "Companies", sub: "Browse the employers hiring on SkillBridge PH." },
+  companies: { label: "Companies", sub: "Employers hiring on SkillBridge PH. Open a company to see its roles and your match." },
   settings: { label: "Profile Settings", sub: "Tell us what work you want so matching stays accurate." },
 };
 
@@ -528,70 +529,78 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
       )}
 
       {tab === "companies" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gap: 12 }}>
           {companies.length === 0 && <p style={{ fontSize: 13, color: COLORS.textLight }}>No companies yet.</p>}
-          {companies.map((c) => (
-            <div key={c.id} style={{ ...cardStyle, display: "grid", gap: 12, alignContent: "start" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ width: 42, height: 42, borderRadius: 10, background: COLORS.parchmentDark, color: COLORS.brownLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IconBuilding size={21} /></span>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.brownDeep, display: "flex", alignItems: "center", gap: 6 }}>
-                    {c.name} {c.verified && <IconCheck size={13} color={COLORS.success} />}
+          {/* One row per company; click a row to see its open roles. Companies hiring now come first. */}
+          {[...companies].sort((a, b) => (b.openRoles || 0) - (a.openRoles || 0)).map((c) => {
+            const roles = c.roles || [];
+            const best = roles.length ? Math.max(...roles.map((r) => r.score || 0)) : null;
+            const facts = [c.location, c.size && `${c.size} employees`].filter(Boolean).join(" · ");
+            const header = (
+              <>
+                <span style={{ width: 44, height: 44, borderRadius: 12, background: COLORS.parchmentDark, color: COLORS.brownDeep, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IconBuilding size={22} /></span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.brownDeep, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    {c.name}
+                    {c.verified && <span className="sbph-badge badge-verified" style={{ textTransform: "none", letterSpacing: 0 }}><IconCheck size={11} style={{ marginRight: 3 }} />Verified</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: COLORS.textLight }}>{c.industry}</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMid, marginTop: 2 }}>{c.industry}</div>
+                  {facts && <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 2, display: "flex", alignItems: "flex-start", gap: 4 }}><IconMapPin size={12} style={{ marginTop: 2 }} />{facts}</div>}
+                  <div style={{ fontSize: 13, color: COLORS.textMid, marginTop: 6 }}>
+                    <strong style={{ color: COLORS.brownDeep }}>{c.openRoles || 0} open role{c.openRoles === 1 ? "" : "s"}</strong>
+                    {best !== null && <> · Best match <strong style={{ color: COLORS.brownDeep }}>{best}%</strong></>}
+                  </div>
                 </div>
-              </div>
+              </>
+            );
 
-              {/* company detail rows */}
-              <div style={{ display: "grid", gap: 4, fontSize: 12, color: COLORS.textMid }}>
-                {c.location && <div style={{ display: "flex", alignItems: "center", gap: 6 }}><IconMapPin size={13} /> {c.location}</div>}
-                {c.size && <div>{c.size} employees</div>}
-                {c.recruiter && <div>Recruiter: {c.recruiter}{c.recruiterPosition ? ` · ${c.recruiterPosition}` : ""}</div>}
-              </div>
+            if (roles.length === 0) {
+              return (
+                <div key={c.id} style={{ ...cardStyle, padding: "16px 18px", display: "flex", alignItems: "center", gap: 14 }}>{header}</div>
+              );
+            }
 
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                <span style={{ padding: "3px 9px", borderRadius: 999, background: COLORS.parchment, border: `1px solid ${COLORS.parchmentDeep}`, fontSize: 12, fontWeight: 600, color: COLORS.info }}>{c.openRoles} open role(s)</span>
-                {c.assessments > 0 && <span style={{ padding: "3px 9px", borderRadius: 999, background: COLORS.parchment, border: `1px solid ${COLORS.parchmentDeep}`, fontSize: 12, fontWeight: 600, color: COLORS.textMid }}>{c.assessments} assessment(s)</span>}
-                {c.verified && <span style={{ padding: "3px 9px", borderRadius: 999, background: "rgba(236,164,6,0.12)", fontSize: 12, fontWeight: 700, color: COLORS.success }}>Verified</span>}
-              </div>
-
-              {/* the employer's open roles, scored for this applicant */}
-              {(c.roles || []).length > 0 && (
-                <div style={{ display: "grid", gap: 8, borderTop: `1px solid ${COLORS.parchmentDeep}`, paddingTop: 10 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: COLORS.textLight }}>Open roles</div>
-                  {(c.roles || []).map((r) => (
-                    <div key={r.id} style={{ background: COLORS.parchment, border: `1px solid ${COLORS.parchmentDeep}`, borderRadius: 10, padding: "10px 12px", display: "grid", gap: 6 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.brownDeep }}>{r.title}</div>
-                        <div style={{ textAlign: "center", flexShrink: 0 }}>
-                          <div style={{ fontFamily: FONT_DISPLAY, fontSize: 15, fontWeight: 600, color: r.score >= 85 ? COLORS.success : COLORS.info }}>{r.score}%</div>
+            return (
+              <details key={c.id} className="sbph-company" style={{ ...cardStyle, padding: 0 }}>
+                <summary style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", listStyle: "none" }}>
+                  {header}
+                  <span className="sbph-company-chevron" aria-hidden="true" style={{ color: COLORS.brownDeep, flexShrink: 0, display: "flex" }}><IconChevronDown size={18} /></span>
+                </summary>
+                <div style={{ borderTop: `1px solid ${COLORS.parchmentDeep}`, padding: "12px 18px 16px", display: "grid", gap: 10 }}>
+                  {c.recruiter && <div style={{ fontSize: 12, color: COLORS.textLight }}>Recruiter: {c.recruiter}{c.recruiterPosition ? ` · ${c.recruiterPosition}` : ""}{c.assessments > 0 ? ` · ${c.assessments} assessment${c.assessments === 1 ? "" : "s"}` : ""}</div>}
+                  {roles.map((r) => (
+                    <div key={r.id} style={{ background: COLORS.parchment, border: `1px solid ${COLORS.parchmentDeep}`, borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                      <div style={{ flex: "1 1 260px", minWidth: 0, display: "grid", gap: 6 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: COLORS.brownDeep }}>{r.title}</div>
+                        <div style={{ fontSize: 12, color: COLORS.textLight }}>{[r.employmentType, r.workSetup, r.salaryRange].filter(Boolean).join(" · ")}</div>
+                        {(r.requiredSkills || []).length > 0 && (
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            {r.requiredSkills.map((sk) => (
+                              <span key={sk} style={{ padding: "2px 8px", borderRadius: 999, background: COLORS.cream, border: `1px solid ${COLORS.parchmentDeep}`, fontSize: 12, color: COLORS.textMid }}>{sk}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                        <div style={{ textAlign: "center", minWidth: 52 }}>
+                          <div style={{ fontFamily: FONT_DISPLAY, fontSize: 18, fontWeight: 700, color: COLORS.brownDeep }}>{r.score}%</div>
                           <div style={{ fontSize: 12, color: COLORS.textLight }}>match</div>
                         </div>
-                      </div>
-                      <div style={{ fontSize: 12, color: COLORS.textLight }}>
-                        {[r.employmentType, r.workSetup, r.salaryRange].filter(Boolean).join(" · ")}
-                      </div>
-                      {(r.requiredSkills || []).length > 0 && (
-                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                          {(r.requiredSkills || []).slice(0, 4).map((s) => (
-                            <span key={s} style={{ padding: "2px 7px", borderRadius: 999, background: COLORS.cream, border: `1px solid ${COLORS.parchmentDeep}`, fontSize: 12, color: COLORS.textMid }}>{s}</span>
-                          ))}
+                        <div style={{ display: "grid", gap: 4, justifyItems: "center" }}>
+                          <button onClick={() => pickJob(r.id, "applied")} disabled={r.status === "applied"} style={{ ...primaryBtn, minHeight: 40, minWidth: 88, opacity: r.status === "applied" ? 0.6 : 1, cursor: r.status === "applied" ? "default" : "pointer" }}>
+                            {r.status === "applied" ? "Applied" : "Apply"}
+                          </button>
+                          {r.status && r.status !== "applied" && (
+                            <span style={{ fontSize: 12, fontWeight: 700, textTransform: "capitalize", color: statusColor(r.status) }}>{r.status}</span>
+                          )}
                         </div>
-                      )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <button onClick={() => pickJob(r.id, "applied")} disabled={r.status === "applied"} style={{ ...primaryBtn, padding: "5px 11px", opacity: r.status === "applied" ? 0.6 : 1 }}>
-                          {r.status === "applied" ? "Applied" : "Apply"}
-                        </button>
-                        {r.status && r.status !== "applied" && (
-                          <span style={{ fontSize: 12, fontWeight: 700, textTransform: "capitalize", color: statusColor(r.status) }}>{r.status}</span>
-                        )}
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          ))}
+              </details>
+            );
+          })}
         </div>
       )}
 
@@ -710,7 +719,7 @@ export default function ProfileView({ account, activeTab = "skills", onTabChange
 
       {/* Take-assessment modal */}
       {activeAssessment && (
-        <div role="dialog" aria-modal="true" aria-label={activeAssessment.title} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 60 }}>
+        <div role="dialog" aria-modal="true" aria-label={activeAssessment.title} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 200 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: COLORS.cream, borderRadius: 16, padding: "22px 24px", width: "min(620px, 100%)", maxHeight: "86vh", overflowY: "auto", border: `1px solid ${COLORS.parchmentDeep}`, boxShadow: "0 22px 60px rgba(0,0,0,0.28)", display: "grid", gap: 14 }}>
             <div>
               <div style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: COLORS.brownLight, fontWeight: 700 }}>Assessment · verifies {activeAssessment.skill}</div>
